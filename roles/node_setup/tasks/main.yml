@@ -1,0 +1,162 @@
+---
+# On each node, we create files which we can easily source from the shell
+# to set the OS_* environment variables expected by the openstack client
+# The first one - admin_openrc - corresponds to the admin role, the second
+# one to our demo user
+- name: Create admin-openrc
+  template:
+    dest: "{{install_user_home}}/admin-openrc"
+    owner: "{{install_user}}"
+    group: "{{install_user}}"
+    force: yes
+    mode: 0700
+    src: "admin_openrc.j2"
+- name: Create demo-openrc
+  template:
+    dest: "{{install_user_home}}/demo-openrc"
+    owner: "{{install_user}}"
+    group: "{{install_user}}"
+    force: yes
+    mode: 0700
+    src: "demo_openrc.j2"
+- name: Create octavia-openrc
+  template:
+    dest: "{{install_user_home}}/octavia-openrc"
+    owner: "{{install_user}}"
+    group: "{{install_user}}"
+    force: yes
+    mode: 0700
+    src: "octavia_openrc.j2"
+- name: Distribute public and private key
+  copy:
+    src: "{{credentials_dir}}/{{item}}"
+    dest: "{{install_user_home}}/{{item}}"
+    owner: "{{install_user}}"
+    group: "{{install_user}}"
+    mode: 0700
+  loop: 
+    - demo-key
+    - demo-key.pub 
+- name: Distribute public and private key for amphorae
+  copy:
+    src: "{{credentials_dir}}/keys/{{item}}"
+    dest: "{{install_user_home}}/{{item}}"
+    owner: "{{install_user}}"
+    group: "{{install_user}}"
+    mode: 0700
+  loop:
+    - amphora-key 
+    - amphora-key.pub
+# 
+# Set up name resolution
+#
+- name: Ensure entries for all nodes exist in /etc/hosts
+  lineinfile:
+    line: "{{ item[1].mgmt_ip}} {{ item[0] }}"
+    state: present
+    path: /etc/hosts
+  loop:
+    "{{ hostvars.items() | list }}"
+  loop_control:
+    label: "{{ item[0] }}"
+
+
+
+#
+# Enable APT repositories and install python openstack client
+#
+- name: Create configuration for APT proxy
+  shell:
+    echo "Acquire::http { Proxy \"{{apt_proxy_url}}\"; };" > /etc/apt/apt.conf.d/71proxy
+  when: use_apt_proxy == True
+- name: Turn off APT proxy when needed
+  file:
+    path: /etc/apt/apt.conf.d/71proxy
+    state: absent
+  when: use_apt_proxy == False
+- name: Install ubuntu cloud keyring
+  apt:
+    name: ubuntu-cloud-keyring
+    force_apt_get: yes
+    update_cache: yes
+    state: latest
+- name: Add repository
+  apt_repository:
+    repo: "deb http://ubuntu-cloud.archive.canonical.com/ubuntu bionic-updates/{{openstack_release}} main"
+    state: present
+    update_cache: yes
+- name: Install python client for OpenStack and OVS
+  apt:
+    name:  "{{item}}"
+    force_apt_get: yes
+    state: latest
+  loop:
+    - python3-openstackclient
+    - openvswitch-switch
+    - python3-octavia
+    - python3-octaviaclient
+- name: Make sure that ifupdown is installed as a workaround for https://github.com/hashicorp/vagrant/issues/9134
+  apt:
+    name: ifupdown
+    force_apt_get: yes
+    state: present
+
+# 
+# At least our compute nodes will have to act as
+# iSCSI initiators when we install Cinder. To be on the safe
+# side and to simplify things, we install Open-iSCSI on all nodes
+# and make sure that a valid initiator name is created
+#
+- name: Install Open iSCSI
+  apt:
+    update_cache: no
+    force_apt_get: yes 
+    name: open-iscsi
+    state: latest 
+- name: Run startup check script to create initiator name
+  command:
+    /lib/open-iscsi/startup-checks.sh
+
+
+
+# Network setup
+# * bring up unnumbered VM network device if specified
+# * create and wire up physical bridge if specified
+#
+- name: Bring up VM network device
+  shell:
+    ip link set {{vm_network_device}} up
+  when: vm_network_device != ""
+- name: Make configuration persistent
+  template:
+    src: 90-openstack.j2
+    dest: /etc/network/interfaces.d/90-openstack
+    mode: 0644
+    owner: root
+  when: vm_network_device != ""
+- name: Make sure that file is sourced in /etc/network/interfaces
+  lineinfile:
+    line: "source /etc/network/interfaces.d/90-openstack"
+    state: present
+    path: /etc/network/interfaces
+  when: vm_network_device != ""
+- name: Make sure that openvswitch services are running (workaround for sporadic errors)
+  service:
+    name: "{{item}}"
+    state: started
+  loop:
+    - ovsdb-server
+    - ovs-vswitchd
+    - openvswitch-switch
+- name: Create OVS bridge br-phys
+  openvswitch_bridge:
+    bridge: "{{phys_bridge_name}}"
+    fail_mode: secure
+    state: present
+  when: phys_bridge_create
+- name: Attach external interface
+  openvswitch_port:
+    bridge: "{{phys_bridge_name}}"
+    port: "patch-{{phys_interface}}"
+    set: "interface patch-{{phys_interface}} type=patch options:peer=patch-{{phys_bridge_name}}"
+  when: phys_bridge_create

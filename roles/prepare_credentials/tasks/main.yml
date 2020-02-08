@@ -1,0 +1,172 @@
+---
+# First we create the credentials. If there is already a file with the
+# credentials in place, we leave it alone as the credentials therein
+# are most likely already in use
+- name: Make sure that credentials directory exists
+  file:
+    path: "{{credentials_dir}}"
+    state: directory
+- name: Make sure that CA and client subdirectories exist
+  file:
+    path: "{{credentials_dir}}/{{item}}"
+    state: directory
+  loop:
+    - install_ca 
+    - octavia_ca 
+    - client_cert
+    - keys
+    - nginx
+- name: Check if credentials.yaml exists
+  stat:
+    path: "{{credentials_dir}}/credentials.yaml"
+  register: credentials_yaml
+- name: Create secure MariaDB password
+  shell:
+    pwgen -1
+  register: pwgen_mariadb
+  when: credentials_yaml.stat.exists == False
+- name: Create secure OS password
+  shell:
+    pwgen -1
+  register: pwgen_os
+  when: credentials_yaml.stat.exists == False
+  # Make this 32 bytes long, so that we also use it as a fernet key
+- name: Create shared secrent for metadata agent
+  shell:
+    pwgen -1 32
+  register: pwgen_metadata
+  when: credentials_yaml.stat.exists == False
+- name: Create secure demo user password
+  shell:
+    pwgen -1
+  register: pwgen_demo  
+  when: credentials_yaml.stat.exists == False
+- name: Create credentials
+  template:
+    dest: "{{credentials_dir}}/credentials.yaml"
+    force: no
+    src: "credentials.yaml.j2"
+  when: credentials_yaml.stat.exists == False
+
+# Now we create an SSH key pair and place it in the
+# credentials directory
+- name: Create key pair locally
+  openssh_keypair:
+    path: "{{credentials_dir}}/{{ssh_key_name}}"
+    size: 2048
+    type: rsa
+    state: present
+
+# Create an RSA key for our CAs
+- name: Generate an OpenSSL key for each CA and one for the client
+  openssl_privatekey:
+    path: "{{credentials_dir}}/{{item}}"
+    size: 2048
+  loop:
+    - install_ca/install_ca.rsa 
+    - octavia_ca/octavia_ca.rsa
+    - client_cert/client_cert.rsa
+- name: Generate  CA certificate signing requests
+  openssl_csr:
+    path: "{{credentials_dir}}/{{item}}/{{item}}.csr"    
+    privatekey_path: "{{credentials_dir}}/{{item}}/{{item}}.rsa"
+    common_name: "{{item}}"
+    basic_constraints: "CA:TRUE"
+    basic_constraints_critical: true
+    useCommonNameForSAN: false
+  loop:
+    - octavia_ca
+    - install_ca
+- name: Generate self-signed CA certificates from these requests
+  openssl_certificate:
+    path: "{{credentials_dir}}/{{item}}/{{item}}.crt"    
+    privatekey_path: "{{credentials_dir}}/{{item}}/{{item}}.rsa"
+    csr_path: "{{credentials_dir}}/{{item}}/{{item}}.csr"
+    provider: selfsigned
+  loop:
+    - octavia_ca
+    - install_ca
+- name: Create a CSR for the client certificate 
+  openssl_csr:
+    path: "{{credentials_dir}}/client_cert/client_cert.csr"    
+    privatekey_path: "{{credentials_dir}}/client_cert/client_cert.rsa"
+    common_name: "client_cert"
+    basic_constraints: "CA:FALSE"
+    basic_constraints_critical: true
+    extended_key_usage: "clientAuth"
+    key_usage: 
+      - digitalSignature
+      - keyEncipherment
+    useCommonNameForSAN: false
+- name: Create a client certificate from this CSR, signed with the install_ca
+  openssl_certificate:
+    path: "{{credentials_dir}}/client_cert/client_cert.crt"    
+    csr_path: "{{credentials_dir}}/client_cert/client_cert.csr"
+    provider: ownca
+    ownca_path: "{{credentials_dir}}/install_ca/install_ca.crt"
+    ownca_privatekey_path: "{{credentials_dir}}/install_ca/install_ca.rsa"
+- name: Combine client certificate and key in one PEM file 
+  shell: |
+    cat {{credentials_dir}}/client_cert/client_cert.rsa  > {{credentials_dir}}/client_cert/client_cert.pem
+    cat {{credentials_dir}}/client_cert/client_cert.crt >> {{credentials_dir}}/client_cert/client_cert.pem
+- name: Create SSH key pair for the Octavia amphorae
+  openssh_keypair:
+    path: "{{credentials_dir}}/keys/amphora-key"
+    size: 2048
+    type: rsa
+    state: present
+
+# 
+# Now we create credentials that we might use for a proxy behind which we put our API
+# and the horizon dashboard
+#
+- name: Create key pair for the root CA
+  openssl_privatekey:
+    path: "{{credentials_dir}}/nginx/ca.rsa"
+    size: 2048
+- name: Create certificate signing request
+  openssl_csr:
+    common_name: "Root CA"
+    country_name: "DE"
+    locality_name: "Big city"
+    organization_name: "openstack"
+    key_usage:
+        - digitalSignature
+        - keyCertSign 
+        - cRLSign
+    key_usage_critical: yes
+    basic_constraints: 
+        - CA:TRUE
+    basic_constraints_critical: yes
+    use_common_name_for_san: false
+    path: "{{credentials_dir}}/nginx/ca.csr"
+    privatekey_path: "{{credentials_dir}}/nginx/ca.rsa"
+- name: Create self-signed certificate
+  openssl_certificate:
+    csr_path: "{{credentials_dir}}/nginx/ca.csr"
+    path: "{{credentials_dir}}/nginx/ca.crt"
+    provider: selfsigned
+    privatekey_path: "{{credentials_dir}}/nginx/ca.rsa"    
+
+
+- name: Create key pair for the end-entity
+  openssl_privatekey:
+    path: "{{credentials_dir}}/nginx/server.rsa"
+    size: 2048
+- name: Create certificate signing request
+  openssl_csr:
+    common_name: "NGINX"
+    country_name: "DE"
+    organization_name: "openstack"
+    subject_alt_name: 
+        - IP:{{proxy_public_ip}}
+    path: "{{credentials_dir}}/nginx/server.csr"
+    privatekey_path: "{{credentials_dir}}/nginx/server.rsa"
+- name: Create certificate for server
+  openssl_certificate:
+    csr_path: "{{credentials_dir}}/nginx/server.csr"
+    path: "{{credentials_dir}}/nginx/server.crt"
+    provider: ownca
+    ownca_path: "{{credentials_dir}}/nginx/ca.crt"
+    ownca_privatekey_path: "{{credentials_dir}}/nginx/ca.rsa"    
+ 

@@ -1,0 +1,11 @@
+---
+# Do not allow any VLAN networks in the default configuration
+network_vlan_ranges: 
+# Do not allow any VXLAN ranges in the default configuration
+network_vxlan_ranges: 
+# List of service plugins to install 
+service_plugins: 
+# MTU of underlying network 
+global_mtu: 1500
+# Explicit MTU mapping per physical network which can be used to override the global setting
+physical_network_mtus: 

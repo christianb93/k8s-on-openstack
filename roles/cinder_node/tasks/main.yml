@@ -1,0 +1,58 @@
+---
+- name: Install LVM
+  apt:
+    update_cache: yes
+    force_apt_get: yes
+    name: "{{item}}"
+    state: latest
+  loop:
+    - lvm2
+    - tgt
+- name: Check whether physical volume already exists
+  # This is not yet fully safe, as it only checks that SOME 
+  # physical volume has been created. However, pvcreate will not allow us
+  # to create a physical volume again already in use, so this should work in most
+  # cases
+  shell: 
+    sudo pvscan -s | wc -l
+  register: 
+    pvscan
+- name: Create physical volume
+  shell: |
+    pvcreate  {{cinder_storage_device}}
+  when: 
+    pvscan.stdout == "1"
+- name: Check whether volume group already exists
+  shell: 
+    sudo vgscan  | grep "cinder-volumes" | wc -l
+  register: 
+    vgscan
+- name: Create volume group
+  shell: |
+    vgcreate cinder-volumes  {{cinder_storage_device}}
+  when: 
+    vgscan.stdout == "0"
+- name: Install Cinder packages
+  apt:
+    update_cache: yes
+    force_apt_get: yes
+    name: "{{item}}"
+    state: latest
+  loop:
+    - thin-provisioning-tools
+    - cinder-volume
+- name: Create the cinder.conf configuration file 
+  template:
+    src: "cinder.conf.j2"
+    dest: /etc/cinder/cinder.conf
+    owner: root
+    group: cinder
+    force: yes
+    mode: 0644
+- name: Restart cinder
+  service:
+    name: "{{item}}"
+    state: restarted
+  loop: 
+    - tgt
+    - cinder-volume
