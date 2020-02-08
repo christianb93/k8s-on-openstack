@@ -30,9 +30,19 @@
         path: "{{state_dir}}/ssh/gcp-stack-key"
         size: 2048
         state: present
+    - name: Show playbook dir 
+      debug:
+        var: playbook_dir
   roles:
     - terraform 
 
+- name: Build SSH configuration
+  hosts: localhost
+  become: no
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+  roles:
+  - ssh_config
 
 - name: Prepare state 
   hosts: localhost
