@@ -1,0 +1,231 @@
+#
+# First we run the terraform role once to build our dynamic inventory
+#
+- name: Run Terraform to build dynamic inventory
+  hosts: localhost 
+  become: no
+  vars:
+    terraform_dir: "{{playbook_dir}}/../base/"
+    state_dir: "{{playbook_dir}}/../.state"
+    gcp_service_account_key: "{{playbook_dir}}/../k8s-on-openstack-sa-key.json"
+  roles:
+    - terraform 
+
+#
+# Create test project and test user
+#
+- name: Create test project and test user
+  hosts: install_node
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: Read credentials
+      include_vars:
+        file: "{{state_dir}}/credentials/credentials.yaml"
+    - name: create test project
+      os_project:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: admin        
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "admin"
+          password: "{{OS_ADMIN_PASSWORD}}"
+        auth_type: password
+        description: "Test project"
+        domain: default
+        name: test
+        state: present
+    - name: Create test user
+      os_user:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: admin
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "admin"
+          password: "{{OS_ADMIN_PASSWORD}}"
+        auth_type: password
+        description: "Sample user"
+        domain: default
+        name: test
+        password: "{{OS_K8S_PASSWORD}}"
+        state: present
+    - name: Assign member role to test user
+      os_user_role:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: admin
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "admin"
+          password: "{{OS_ADMIN_PASSWORD}}"
+        auth_type: password
+        project: test
+        user: test
+        role: member
+        state: present
+    - name: Import key pair as test user
+      os_keypair:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: test
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "test"
+          password: "{{OS_K8S_PASSWORD}}"
+        auth_type: password
+        name: os-default-key
+        public_key_file: "{{install_user_home}}/os-default-key.pub"
+
+#
+# Create networks
+#        
+- name: Create test project and test user
+  hosts: install_node
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: Allow ICMP traffic for default security group in test project
+      os_security_group_rule:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: test
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "test"
+          password: "{{OS_K8S_PASSWORD}}"
+        auth_type: password
+        direction: ingress
+        protocol: icmp
+        remote_ip_prefix: "0.0.0.0/0"
+        security_group: default
+        state: present
+    - name: Allow SSH traffic for default security group in test project
+      os_security_group_rule:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: test
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "test"
+          password: "{{OS_K8S_PASSWORD}}"
+        auth_type: password
+        direction: ingress
+        protocol: tcp
+        port_range_max: 22
+        port_range_min: 22
+        remote_ip_prefix: "0.0.0.0/0"
+        security_group: default
+        state: present        
+    - name: Create internal, VXLAN network (owned by test project)
+      os_network:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: test
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "test"
+          password: "{{OS_K8S_PASSWORD}}"
+        auth_type: password
+        external: no
+        name: internal-network
+        shared: false
+        state: present
+    - name: Create subnet on internal network
+      os_subnet:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: test
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "test"
+          password: "{{OS_K8S_PASSWORD}}"
+        auth_type: password
+        enable_dhcp: yes
+        gateway_ip: 172.18.0.1
+        cidr: 172.18.0.0/24
+        network_name: internal-network
+        name: internal-subnet
+        state: present
+        allocation_pool_start: 172.18.0.2
+        allocation_pool_end:  172.18.0.100
+    - name: Create router to access our instances from the external network
+      os_router:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: test
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "test"
+          password: "{{OS_K8S_PASSWORD}}"
+        auth_type: password
+        interfaces:
+          internal-subnet
+        name: test-router
+        network: external-network   
+
+#
+# Create a few test instances
+#        
+- name: Create test instances and show results
+  hosts: install_node
+  tasks:
+    - name: Create two instances in the internal network that we have just created
+      os_server:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: test
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "test"
+          password: "{{OS_K8S_PASSWORD}}"
+        auth_type: password
+        name: "{{item}}"
+        auto_ip: no
+        flavor: m1.nano
+        image: cirros
+        key_name: "os-default-key"
+        network: internal-network
+        security_groups:
+          - default
+      loop:
+        - web-1
+        - web-2
+    - name: Retrieve server list
+      os_server_facts:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: test
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "test"
+          password: "{{OS_K8S_PASSWORD}}"
+        auth_type: password
+        server: "web-*"
+      register: server_info
+    - name: Show output
+      debug:
+        var: server_info
+    - name: Associate floating IP addresses
+      os_floating_ip:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: test
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "test"
+          password: "{{OS_K8S_PASSWORD}}"
+        auth_type: password
+        reuse: yes
+        nat_destination: internal-network
+        network: external-network
+        server: "{{item}}"
+        state: present
+        wait: yes
+      loop:
+        - web-1
+        - web-2
+      register: floating_ip
+
+

@@ -245,7 +245,64 @@
     - neutron_l3agent
     - octavia_controlplane
 
- 
+#
+# Run some basic configuration steps (create flavors and external network)
+# 
+- name: Run basic configuration of our new environment
+  hosts: network 
+  become: no
+  tasks:
+    - name: Create m1.nano flavor
+      os_nova_flavor:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: admin
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "admin"
+          password: "{{OS_ADMIN_PASSWORD}}"
+        auth_type: password
+        disk: 1
+        name: m1.nano
+        ram: 128
+        vcpus: 1
+        state: present
+    - name: Create external, flat network (shared, owned by admin)
+      os_network:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: admin
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "admin"
+          password: "{{OS_ADMIN_PASSWORD}}"
+        auth_type: password
+        external: yes
+        name: external-network
+        provider_network_type: flat
+        provider_physical_network: physnet
+        shared: true
+        state: present
+    - name: Create subnet on external network
+      os_subnet:
+        auth:
+          auth_url: http://controller:5000/v3
+          username: admin
+          os_user_domain_name: "default"
+          os_project_domain_name: "default"
+          os_project_name: "admin"
+          password: "{{OS_ADMIN_PASSWORD}}"
+        auth_type: password
+        enable_dhcp: yes
+        gateway_ip: 172.16.0.1
+        cidr: 172.16.0.0/24
+        network_name: external-network
+        name: external-subnet
+        state: present
+        allocation_pool_start: 172.16.0.2
+        allocation_pool_end:  172.16.0.100
+
+
 #
 # Print completion message and usage instructions
 #
