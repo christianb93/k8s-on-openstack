@@ -27,19 +27,13 @@
     force: yes
     mode: 0700
     src: "octavia_openrc.j2"
-- name: Distribute public and private key
-  copy:
-    src: "{{credentials_dir}}/{{item}}"
-    dest: "{{install_user_home}}/{{item}}"
-    owner: "{{install_user}}"
-    group: "{{install_user}}"
-    mode: 0700
-  loop: 
-    - demo-key
-    - demo-key.pub 
+
+#
+# Next we distribute the amphora key and the SSH default key
+#
 - name: Distribute public and private key for amphorae
   copy:
-    src: "{{credentials_dir}}/keys/{{item}}"
+    src: "{{state_dir}}/ssh/{{item}}"
     dest: "{{install_user_home}}/{{item}}"
     owner: "{{install_user}}"
     group: "{{install_user}}"
@@ -47,6 +41,8 @@
   loop:
     - amphora-key 
     - amphora-key.pub
+    - os-default-key
+    - os-default-key.pub
 # 
 # Set up name resolution
 #

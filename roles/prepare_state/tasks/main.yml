@@ -34,15 +34,17 @@
     src: "credentials.yaml.j2"
   when: credentials_yaml.stat.exists == False
 
-# Now we create an SSH key pair and place it in the
+# Now we create the needed SSH key pairs and place it in the
 # credentials directory
-- name: Create key pair locally
+- name: Create key pairs locally
   openssh_keypair:
-    path: "{{state_dir}}/ssh/{{ssh_key_name}}"
+    path: "{{state_dir}}/ssh/{{item}}"
     size: 2048
     type: rsa
     state: present
-
+  loop:
+    - os-default-key
+    - amphora-key
 # 
 # Next we create all key pairs that we need
 #

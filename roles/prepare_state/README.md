@@ -32,7 +32,6 @@ Role Variables
 
 The following variables are assumed to be set when calling this role:
 
-* ssh_key_name - this is the name which is used for the SSH key pair
 * state_dir: the directory where the state is stored.
 
 Dependencies

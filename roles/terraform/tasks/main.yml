@@ -21,6 +21,8 @@
     # Note that all variables that we want to override need to be present
     # in main.tf, even though they might be defined in a module
     variables:
+      stack_public_ssh_key_file: "{{state_dir}}/ssh/gcp-stack-key.pub"
+      stack_private_ssh_key_file: "{{state_dir}}/ssh/gcp-stack-key"
 
 
   register: tf_results

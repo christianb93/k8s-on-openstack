@@ -49,8 +49,6 @@
   become: no 
   vars:
     state_dir: "{{playbook_dir}}/../.state"
-    # The name of the SSH key that we will create and use to access our OpenStack instances
-    ssh_key_name: os-default-key
   roles:
     - prepare_state
 

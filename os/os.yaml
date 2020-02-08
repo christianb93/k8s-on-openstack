@@ -1,0 +1,67 @@
+---
+# 
+# Install OpenStack
+#
+
+#
+# First we run the terraform role once to build our dynamic inventory
+#
+- name: Run Terraform to build dynamic inventory
+  hosts: localhost 
+  become: no
+  vars:
+    terraform_dir: "{{playbook_dir}}/../base/"
+    state_dir: "{{playbook_dir}}/../.state"
+    gcp_service_account_key: "{{playbook_dir}}/../k8s-on-openstack-sa-key.json"
+  roles:
+    - terraform 
+
+- name: Wait for all machines to become ready
+  hosts: all
+  gather_facts: no
+  tasks:
+  - name: Wait for machine to become reachable
+    wait_for_connection:
+      delay: 5
+      sleep: 10
+
+# Set up APT cache on controller node
+- name: Install APT cache on controller
+  hosts: controller_nodes
+  become: yes
+  tasks: 
+  - name: Install apt-cacher-ng 
+    apt:
+      name: apt-cacher-ng
+      force_apt_get: yes 
+      update_cache: yes
+      state: latest
+
+
+# Set up a proxy on the network node to 
+# provide a public API and Horizon endpoint
+- name: Set up proxy on network node
+  hosts: network_nodes
+  become: yes
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+    os_known_ports: ['5000', '8774', '8776', '8778', '9696', '9292', '9876']
+  roles: 
+  - proxy
+
+ 
+#
+# Import OpenStack credentials and run basic setup steps
+# on all nodes
+#
+- name: Basic node setup
+  hosts: all
+  gather_facts: no
+  become: yes
+  pre_tasks:
+    - name: Read credentials
+      include_vars:
+        file: "{{state_dir}}/credentials/credentials.yaml"
+  roles:
+    - node_setup
+  

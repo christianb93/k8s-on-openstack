@@ -1,8 +1,8 @@
 {% for port in os_known_ports %}
 server {
   listen {{port}} ssl;
-  ssl_certificate         /etc/nginx/certs/server.crt;
-  ssl_certificate_key     /etc/nginx/certs/server.rsa;  
+  ssl_certificate         /etc/nginx/certs/nginx.crt;
+  ssl_certificate_key     /etc/nginx/certs/nginx.rsa;  
   location / {
     proxy_bind              {{mgmt_ip}};
     proxy_pass              http://controller:{{port}};
@@ -16,8 +16,8 @@ server {
 # This is the virtual server for Horizon
 server {
   listen 443 ssl;
-  ssl_certificate         /etc/nginx/certs/server.crt;
-  ssl_certificate_key     /etc/nginx/certs/server.rsa;  
+  ssl_certificate         /etc/nginx/certs/nginx.crt;
+  ssl_certificate_key     /etc/nginx/certs/nginx.rsa;  
   location /horizon/ {
     proxy_bind                {{mgmt_ip}};
     proxy_pass                http://controller/horizon/;
@@ -32,8 +32,8 @@ server {
 # The entry for the VNC proxy
 server {
   listen 6080 ssl;
-  ssl_certificate         /etc/nginx/certs/server.crt;
-  ssl_certificate_key     /etc/nginx/certs/server.rsa;  
+  ssl_certificate         /etc/nginx/certs/nginx.crt;
+  ssl_certificate_key     /etc/nginx/certs/nginx.rsa;  
   location / {
     proxy_bind                  {{mgmt_ip}};
     proxy_pass                  http://controller:6080;

@@ -1,0 +1,68 @@
+---
+# The directory in which we keep our state
+state_dir: "{{playbook_dir}}/../.state"
+# The public IP address under which the proxy that we put in front
+# of the API will be reachable
+proxy_public_ip: "{{hostvars.network.ansible_ssh_host}}"
+# The management network that we use
+management_network_cidr: "192.168.1.0/24"
+# The user we will use throughout the installation process on the nodes
+install_user: stack
+# The home directory of the install user
+install_user_home: "/home/stack"
+# Name of the unnamed device (i.e. with no IP address assigned) that we will
+# use for the VM network
+vm_network_device: ""
+# The name of the OVS bridge that we will create and to which Neutron will attach
+# to connect to the physical network interfaces
+phys_bridge_name: br-phys
+# The interface which we attach to this bridge to provide connectivity
+phys_interface: br-ext
+# The password for the MariaDB root user
+mariadb_root_password: "{{MARIADB_ROOT_PASSWORD}}"
+# Node setup
+api_node: controller
+db_node: controller
+ntp_node: controller
+memcached_node: controller
+mq_node: controller
+# Network configuration
+type_drivers: "local, flat, vxlan"
+tenant_network_types: "vxlan"
+flat_networks: "physnet"
+network_vxlan_ranges: "2000:2100"
+service_plugins: "router"
+ovs_bridge_mappings: "physnet:br-phys"
+ovs_tunnel_types: "vxlan"
+# Public interface on the network node to which our iptables configuration will route
+# traffic
+router_public_interface: "ens4"
+# Global MTU on GCE is only 1460 due to GRE encapsulation
+global_mtu: 1460
+# As we realize the network that Neutron sees as physical network as a VXLAN network, we need
+# to tell Neutron about the lower MTU
+physical_network_mtus: "physnet:1410"
+# The region that Nova will use to locate the cinder service - setting this will enable cinder
+cinder_os_region_name: "RegionOne"
+# The device on the storage node that Cinder will use as a physical LVM volume
+# WARNING: specifying the wrong device might destroy data! Make sure that this matches
+# the disk name in main.tf
+cinder_storage_device: "/dev/disk/by-id/google-lvm-volume"
+# We have a setup which allows for nested virtualization
+virt_type:  "kvm"
+# URL of the amphora image. This can either be a file location (file://) or a http
+# link
+amphora_image_url: "https://s3.eu-central-1.amazonaws.com/cloud.leftasexercise.com/amphora-x64-haproxy.qcow2"
+# For the load balancer network, we attach a port to the integration bridge on the network node
+# this is the MTU of the underlying device. Set this to the network MTU minus 50 as the load
+# balancer network is a VXLAN network
+lb_port_mtu: 1410
+# These parameters determine the IP ranges that we use for the load balancer network
+lb_network_cidr: "172.20.0.0/24"
+lb_network_gateway_ip: "172.20.0.1"
+lb_network_allocation_start: "172.20.0.2"
+lb_network_allocation_end: "172.20.0.100"
+# Hand out the public IP of the network node as endpoint for
+# VNC requests
+vnc_ip: "{{hostvars.network.ansible_ssh_host}}"
+vnc_proto: "https"

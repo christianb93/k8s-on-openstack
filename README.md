@@ -36,6 +36,7 @@ To run a full installation, the following steps are needed (assuming that you ha
 
 ```
 ansible-playbook base/base.yaml
+ansible-playbook os/os.yaml
 ```
 
 To destroy all resources again, run

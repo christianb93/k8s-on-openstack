@@ -18,11 +18,11 @@
     path: "/etc/nginx/certs"
 - name: Copy certificates for NGINX
   copy:
-    src: "{{credentials_dir}}/nginx/{{item}}"
+    src: "{{state_dir}}/os_certs/{{item}}"
     dest: "/etc/nginx/certs/{{item}}"
   loop:
-    - server.crt 
-    - server.rsa
+    - nginx.crt 
+    - nginx.rsa
 - name: Restart service 
   service:
     name: nginx 
