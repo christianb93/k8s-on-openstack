@@ -18,6 +18,7 @@ This repository contains the following directories:
 * labXXX - one directory for each lab
 
 
+
 # Preparations
 
 You will need a GCE account and a project in which our resources will be located. Assuming that you have an account, head to the [Google cloud consoe](https://console.cloud.google.com/), log in, click on the dropdown at the top which allows you to select a project and then click on "New project". Give your project a meaningful name, I used *k8s-on-openstack* for this. Google will then assign a globally unique project ID. Then select your new project, open the navigation bar and select "IAM & admin - Service accounts". Create a new service account, give it a meaningful name and description and hit "Create". 
@@ -32,12 +33,24 @@ Then continue and create a key. Select the file type JSON and store the download
 
 # Running 
 
-To run a full installation, the following steps are needed (assuming that you have cloned this repository and your current working directory is the directory in which this README is located). We also assume that you have copied the service account key created above into this directory as well. 
+To run a full installation, the following steps are needed (assuming that you have cloned this repository and your current working directory is the directory in which this README is located). We also assume that you have copied the service account key created above into this directory as well. First, run the Ansible playbooks that create the base environment in GCE and bring up the OpenStack environment 
 
 ```
 ansible-playbook base/base.yaml
 ansible-playbook os/os.yaml
 ```
+
+Once these scripts complete, you should have a running OpenStack environment at your disposal. To test that this works, run the test.yaml playbook.
+
+```
+ansible-playbook os/test.yaml
+```
+
+After running this playbook, open the Horizon CLI using the instructions printed by the *os.yaml* playbook earlier and take a look at the environment which has been created, logged in as the user *test* in the *test* project, but using the password of the k8s user. 
+
+If you have an OpenStack command line client installed locally, you can also test that the API can be reached from your machine.
+
+TBD
 
 To destroy all resources again, run
 

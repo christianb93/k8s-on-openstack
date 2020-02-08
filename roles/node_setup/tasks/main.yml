@@ -2,7 +2,7 @@
 # On each node, we create files which we can easily source from the shell
 # to set the OS_* environment variables expected by the openstack client
 # The first one - admin_openrc - corresponds to the admin role, the second
-# one to our demo user
+# one to our k8s user
 - name: Create admin-openrc
   template:
     dest: "{{install_user_home}}/admin-openrc"
@@ -11,14 +11,14 @@
     force: yes
     mode: 0700
     src: "admin_openrc.j2"
-- name: Create demo-openrc
+- name: Create k8s-openrc
   template:
-    dest: "{{install_user_home}}/demo-openrc"
+    dest: "{{install_user_home}}/k8s-openrc"
     owner: "{{install_user}}"
     group: "{{install_user}}"
     force: yes
     mode: 0700
-    src: "demo_openrc.j2"
+    src: "k8s_openrc.j2"
 - name: Create octavia-openrc
   template:
     dest: "{{install_user_home}}/octavia-openrc"

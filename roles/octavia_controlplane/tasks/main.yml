@@ -24,33 +24,30 @@
 - name: Distribute CA certificates 
   copy:
     dest: "/etc/octavia/certs/{{item}}.crt"
-    src: "{{credentials_dir}}/{{item}}/{{item}}.crt"
+    src: "{{state_dir}}/ca/{{item}}.crt"
     owner: root
     group: octavia
     mode: 0750
   loop:
-    - install_ca
+    - os_ca
     - octavia_ca
 - name: Distribute CA private keys 
   copy:
     dest: "/etc/octavia/keys/{{item}}.rsa"
-    src: "{{credentials_dir}}/{{item}}/{{item}}.rsa"
+    src: "{{state_dir}}/ca/{{item}}.rsa"
     owner: root
     group: octavia
     mode: 0750
   loop:
-    - install_ca
+    - os_ca
     - octavia_ca
 - name: Distribute client PEM file
   copy:
     dest: "/etc/octavia/certs/client_cert.pem"
-    src: "{{credentials_dir}}/client_cert/client_cert.pem"
+    src: "{{state_dir}}/os_certs/os_client.pem"
     owner: root
     group: octavia
     mode: 0740
-  loop:
-  - install_ca
-  - octavia_ca
 
 
 # Create flavor for the amphorae
