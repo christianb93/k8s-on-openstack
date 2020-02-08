@@ -1,0 +1,46 @@
+---
+# 
+# Bring up the base environment on GCE and prepare the state 
+# that we will need for later scripts
+#
+
+
+- name: Run Terraform
+  hosts: localhost 
+  become: no
+  vars:
+    terraform_dir: "{{playbook_dir}}"
+    state_dir: "{{playbook_dir}}/../.state"
+    gcp_service_account_key: "{{playbook_dir}}/../k8s-on-openstack-sa-key.json"
+  pre_tasks:
+    - name: Make sure that state directory and all required subdirectories exist 
+      file:
+        path: "{{playbook_dir}}/../{{item}}"
+        state: directory
+      loop:
+        - .state
+        - .state/ssh 
+        - .state/tf 
+        - .state/ca
+        - .state/credentials
+        - .state/os_certs
+    - name: Create SSH key pair for the stack user on GCE 
+      openssh_keypair:
+        mode: 0600
+        path: "{{state_dir}}/ssh/gcp-stack-key"
+        size: 2048
+        state: present
+  roles:
+    - terraform 
+
+
+- name: Prepare state 
+  hosts: localhost
+  become: no 
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+    # The name of the SSH key that we will create and use to access our OpenStack instances
+    ssh_key_name: os-default-key
+  roles:
+    - prepare_state
+

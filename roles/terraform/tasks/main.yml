@@ -13,14 +13,16 @@
 
 - name: Run Terraform
   terraform:
-    project_path: "{{ playbook_dir }}"
+    project_path: "{{terraform_dir}}"
     state: present
     workspace: default
+    force_init: yes
     # Here we can override variables defined within the Terraform modules
     # Note that all variables that we want to override need to be present
     # in main.tf, even though they might be defined in a module
     variables:
-    
+
+
   register: tf_results
 # Now iterate over the list returned by Terraform and build
 # the inventory accordingly.

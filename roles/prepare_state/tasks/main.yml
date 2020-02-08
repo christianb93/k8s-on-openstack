@@ -1,0 +1,143 @@
+---
+# First we create the credentials. If there is already a file with the
+# credentials in place, we leave it alone as the credentials therein
+# are most likely already in use
+- name: Check if credentials.yaml exists
+  stat:
+    path: "{{state_dir}}/credentials/credentials.yaml"
+  register: credentials_yaml
+- name: Create secure MariaDB password
+  shell:
+    pwgen -1
+  register: pwgen_mariadb
+  when: credentials_yaml.stat.exists == False
+- name: Create secure OS password
+  shell:
+    pwgen -1
+  register: pwgen_os
+  when: credentials_yaml.stat.exists == False
+  # Make this 32 bytes long, so that we also use it as a fernet key
+- name: Create shared secrent for metadata agent
+  shell:
+    pwgen -1 32
+  register: pwgen_metadata
+  when: credentials_yaml.stat.exists == False
+- name: Create secure demo user password
+  shell:
+    pwgen -1
+  register: pwgen_demo  
+  when: credentials_yaml.stat.exists == False
+- name: Create credentials
+  template:
+    dest: "{{state_dir}}/credentials/credentials.yaml"
+    force: no
+    src: "credentials.yaml.j2"
+  when: credentials_yaml.stat.exists == False
+
+# Now we create an SSH key pair and place it in the
+# credentials directory
+- name: Create key pair locally
+  openssh_keypair:
+    path: "{{state_dir}}/ssh/{{ssh_key_name}}"
+    size: 2048
+    type: rsa
+    state: present
+
+# 
+# Next we create all key pairs that we need
+#
+- name: Generate an OpenSSL key for each CA and one for the client
+  openssl_privatekey:
+    path: "{{state_dir}}/{{item}}"
+    size: 2048
+  loop:
+    - ca/os_ca.rsa 
+    - ca/octavia_ca.rsa
+    - os_certs/os_client.rsa
+    - os_certs/nginx.rsa
+
+# 
+# We known create CSRs and certificates for all our CAs
+#    
+- name: Generate CA certificate signing requests
+  openssl_csr:
+    path: "{{item.path}}.csr"    
+    privatekey_path: "{{item.path}}.rsa"
+    common_name: "{{item.cn}}"
+    basic_constraints: "CA:TRUE"
+    basic_constraints_critical: true
+    useCommonNameForSAN: false
+  loop:
+    - cn: "OpenStack CA"
+      path: "{{state_dir}}/ca/os_ca"
+    - cn: "Octavia CA"
+      path: "{{state_dir}}/ca/octavia_ca"
+- name: Generate self-signed CA certificates from these requests
+  openssl_certificate:
+    path: "{{item.path}}.crt"    
+    privatekey_path: "{{item.path}}.rsa"
+    csr_path: "{{item.path}}.csr"
+    provider: selfsigned
+  loop:
+    - cn: "OpenStack CA"
+      path: "{{state_dir}}/ca/os_ca"
+    - cn: "Octavia CA"
+      path: "{{state_dir}}/ca/octavia_ca"
+
+#
+# Now we create all required CSRs
+#      
+- name: Create certificate signing requests for client certificates 
+  openssl_csr:
+    path: "{{item.path}}.csr"    
+    privatekey_path: "{{item.path}}.rsa"    
+    common_name: "{{item.cn}}"
+    basic_constraints: "CA:FALSE"
+    basic_constraints_critical: true
+    extended_key_usage: "clientAuth"
+    key_usage: 
+      - digitalSignature
+      - keyEncipherment
+    useCommonNameForSAN: false
+  loop:
+    - cn: "OpenStack client"    
+      path: "{{state_dir}}/os_certs/os_client"
+
+- name: Create certificate signing requests for servers 
+  openssl_csr:
+    path: "{{item.path}}.csr"    
+    privatekey_path: "{{item.path}}.rsa"    
+    common_name: "{{item.cn}}"
+    basic_constraints: "CA:FALSE"
+    basic_constraints_critical: true
+    useCommonNameForSAN: false
+    subject_alt_name: 
+      - IP:{{item.ip}}
+  loop:
+    - cn: "Nginx"
+      path: "{{state_dir}}/os_certs/nginx"
+      ip: "{{hostvars.network.ansible_ssh_host}}"
+
+#
+# Issue all certificates
+#
+- name: Create certificates from CSRs
+  openssl_certificate:
+    path: "{{item.path}}.crt"    
+    csr_path: "{{item.path}}.csr"
+    provider: ownca
+    ownca_path: "{{state_dir}}/ca/{{item.ca}}.crt"
+    ownca_privatekey_path: "{{state_dir}}/ca/{{item.ca}}.rsa"
+  loop:
+    - path: "{{state_dir}}/os_certs/os_client"
+      ca: os_ca 
+    - path: "{{state_dir}}/os_certs/nginx"
+      ca: os_ca 
+
+- name: Combine client certificate and key in one PEM file 
+  shell: |
+    cat {{item.path}}.rsa  > {{item.path}}.pem
+    cat {{item.path}}.crt >> {{item.path}}.pem
+  loop:
+    - path: "{{state_dir}}/os_certs/os_client"
+
