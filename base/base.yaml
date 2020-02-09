@@ -25,15 +25,13 @@
         - .state/credentials
         - .state/os_certs
         - .state/config
+        - .state/k8s_certs
     - name: Create SSH key pair for the stack user on GCE 
       openssh_keypair:
         mode: 0600
         path: "{{state_dir}}/ssh/gcp-stack-key"
         size: 2048
         state: present
-    - name: Show playbook dir 
-      debug:
-        var: playbook_dir
   roles:
     - terraform 
 

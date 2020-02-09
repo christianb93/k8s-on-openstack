@@ -48,15 +48,18 @@
 # 
 # Next we create all key pairs that we need
 #
-- name: Generate an OpenSSL key for each CA and one for the client
+- name: Generate all needed OpenSSL keys
   openssl_privatekey:
     path: "{{state_dir}}/{{item}}"
     size: 2048
   loop:
     - ca/os_ca.rsa 
     - ca/octavia_ca.rsa
+    - ca/etcd_ca.rsa
     - os_certs/os_client.rsa
     - os_certs/nginx.rsa
+    - k8s_certs/apiserver_etcd_client.rsa
+    - k8s_certs/etcd_server.rsa
 
 # 
 # We known create CSRs and certificates for all our CAs
@@ -66,14 +69,23 @@
     path: "{{item.path}}.csr"    
     privatekey_path: "{{item.path}}.rsa"
     common_name: "{{item.cn}}"
-    basic_constraints: "CA:TRUE"
-    basic_constraints_critical: true
-    useCommonNameForSAN: false
+    key_usage:
+        - digitalSignature
+        - keyCertSign 
+        - cRLSign
+    key_usage_critical: yes
+    basic_constraints: 
+        - CA:TRUE
+    basic_constraints_critical: yes
+    use_common_name_for_san: false
   loop:
     - cn: "OpenStack CA"
       path: "{{state_dir}}/ca/os_ca"
     - cn: "Octavia CA"
       path: "{{state_dir}}/ca/octavia_ca"
+    - cn: "etcd CA"
+      path: "{{state_dir}}/ca/etcd_ca"
+
 - name: Generate self-signed CA certificates from these requests
   openssl_certificate:
     path: "{{item.path}}.crt"    
@@ -85,6 +97,8 @@
       path: "{{state_dir}}/ca/os_ca"
     - cn: "Octavia CA"
       path: "{{state_dir}}/ca/octavia_ca"
+    - cn: "etcd CA"
+      path: "{{state_dir}}/ca/etcd_ca"
 
 #
 # Now we create all required CSRs
@@ -94,6 +108,7 @@
     path: "{{item.path}}.csr"    
     privatekey_path: "{{item.path}}.rsa"    
     common_name: "{{item.cn}}"
+    organization_name: "{{item.o}}"
     basic_constraints: "CA:FALSE"
     basic_constraints_critical: true
     extended_key_usage: "clientAuth"
@@ -103,7 +118,12 @@
     useCommonNameForSAN: false
   loop:
     - cn: "OpenStack client"    
+      o: "OpenStack"
       path: "{{state_dir}}/os_certs/os_client"
+    - cn: "kube-apiserver-etcd-client"
+      o: "system:masters"
+      path: "{{state_dir}}/k8s_certs/apiserver_etcd_client"
+
 
 - name: Create certificate signing requests for servers 
   openssl_csr:
@@ -119,6 +139,7 @@
     - cn: "Nginx"
       path: "{{state_dir}}/os_certs/nginx"
       ip: "{{hostvars.network.ansible_ssh_host}}"
+  
 
 #
 # Issue all certificates
@@ -135,6 +156,8 @@
       ca: os_ca 
     - path: "{{state_dir}}/os_certs/nginx"
       ca: os_ca 
+    - path: "{{state_dir}}/k8s_certs/apiserver_etcd_client"
+      ca: etcd_ca
 
 - name: Combine client certificate and key in one PEM file 
   shell: |

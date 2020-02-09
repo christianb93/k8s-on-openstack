@@ -20,6 +20,7 @@ The state directory will be structured as follows.
 * ca - contains keys and certificates for the CAs
 * credentials - credentials, i.e. OpenStack passwords
 * os_certs - keys and certificates for OpenStack
+* k8s_cert - keys and certificates for Kubernetes and etcd
 * config - contains configuration data. All information that the later stages need about the OpenStack install go here, to make it easier to use the scripts with a different OpenStack installation
 
 

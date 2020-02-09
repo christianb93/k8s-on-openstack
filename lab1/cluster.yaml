@@ -1,0 +1,35 @@
+---
+- name: Initial node setup
+  hosts: worker_nodes, master_nodes
+  become: yes 
+  roles:
+    - k8s_node_setup
+
+
+#
+# There are some additional certificates that we can only create now, once all
+# IP addresses are known
+#
+- name: Create additional certificates 
+  hosts: localhost
+  become: no
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+  roles:
+    - late_certs
+
+- name: Install etcd on master node 
+  hosts: master
+  become: yes
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+    etcd_ca_private_key: "{{state_dir}}/ca/etcd_ca.rsa"
+    etcd_ca_cert: "{{state_dir}}/ca/etcd_ca.crt"
+    apiserver_etcd_client_key: "{{state_dir}}/k8s_certs/apiserver_etcd_client.rsa"
+    apiserver_etcd_client_cert: "{{state_dir}}/k8s_certs/apiserver_etcd_client.crt"
+    etcd_server_cert: "{{state_dir}}/k8s_certs/etcd_server.crt"
+    etcd_server_key: "{{state_dir}}/k8s_certs/etcd_server.rsa"
+  roles:
+    - etcd
+
+    

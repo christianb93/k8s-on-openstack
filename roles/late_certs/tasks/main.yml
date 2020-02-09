@@ -1,0 +1,38 @@
+---
+- name: Create certificate signing requests for servers 
+  openssl_csr:
+    path: "{{item.path}}.csr"    
+    privatekey_path: "{{item.path}}.rsa"    
+    common_name: "{{item.cn}}"
+    basic_constraints: "CA:FALSE"
+    basic_constraints_critical: true
+    useCommonNameForSAN: false
+    subject_alt_name: 
+      - IP:{{item.ip}}
+      - DNS:{{item.dns}}
+    key_usage: 
+        - digitalSignature
+        - keyEncipherment    
+    extended_key_usage:
+        - clientAuth        
+        - serverAuth
+  loop:
+    - cn: "etcd"
+      path: "{{state_dir}}/k8s_certs/etcd_server"
+      ip: "{{hostvars.master.mgmt_ip}}"
+      dns: "master"
+
+
+#
+# Issue all certificates
+#
+- name: Create certificates from CSRs
+  openssl_certificate:
+    path: "{{item.path}}.crt"    
+    csr_path: "{{item.path}}.csr"
+    provider: ownca
+    ownca_path: "{{state_dir}}/ca/{{item.ca}}.crt"
+    ownca_privatekey_path: "{{state_dir}}/ca/{{item.ca}}.rsa"
+  loop:
+    - path: "{{state_dir}}/k8s_certs/etcd_server"
+      ca: etcd_ca 

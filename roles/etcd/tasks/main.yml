@@ -1,0 +1,89 @@
+# 
+# Install the package, but do not start services. We need this here
+# to make sure that the user etcd exists
+#    
+- name: Install etcd packages 
+  apt:
+    force_apt_get: yes 
+    update_cache: yes 
+    name: etcd
+    state: latest 
+    policy_rc_d: 101
+
+
+- name: Make sure that /etc/kubernetes/pki exists 
+  file: 
+    state: directory
+    path: "/etc/kubernetes/pki"
+- name: Copy key pair for the etcd root CA
+  copy:
+    dest: "/etc/kubernetes/pki/etcd_ca.rsa"
+    src: "{{etcd_ca_private_key}}"
+    owner: root 
+    group: etcd
+    mode: 0640
+- name: Copy etcd root CA certificate 
+  copy:
+    dest: "/etc/kubernetes/pki/etcd_ca.crt"
+    src: "{{etcd_ca_cert}}"
+    owner: root 
+    group: etcd 
+    mode: 0640
+
+#
+# Next we copy key and certificates for the API server, i.e. the
+# client certificate and key that the K8s API server will use to connect 
+# to etc
+#
+- name: Copy key pair for the API server client certificate
+  copy:
+    dest: "/etc/kubernetes/pki/apiserver_etcd_client.rsa"
+    src: "{{apiserver_etcd_client_key}}"
+    owner: root 
+    group: root 
+    mode: 0600
+- name: Copy client certificate for API server
+  copy:
+    dest: "/etc/kubernetes/pki/apiserver_etcd_client.crt"
+    src: "{{apiserver_etcd_client_cert}}"
+    owner: root 
+    group: root 
+    mode: 0600
+
+#
+# We also need a certificate and a key for the etcd server
+#
+- name: Copy server certificate for etcd
+  copy:
+    dest: "/etc/kubernetes/pki/etcd_server.crt"
+    src: "{{etcd_server_cert}}"
+    owner: root 
+    group: etcd
+    mode: 0640
+- name: Copy server key for etcd
+  copy:
+    dest: "/etc/kubernetes/pki/etcd_server.rsa"
+    src: "{{etcd_server_key}}"
+    owner: root 
+    group: etcd
+    mode: 0640
+
+#
+# Create configuration file 
+# 
+- name: Create configuration file
+  template:
+    src: etcd.j2
+    dest: "/etc/default/etcd"
+    owner: root
+    group: root 
+    mode: 0644
+  
+#
+# Start server
+#
+- name: Enable and (re)start server 
+  service:
+    name: etcd
+    enabled: yes
+    state: restarted
