@@ -50,6 +50,14 @@ ansible-playbook os/os.yaml
 ansible-playbook nodes/nodes.yaml
 ```
 
+Once these commands complete, your OpenStack cluster is up and running, and three instances (which will be our master node and two worker nodes) have been spawned. You should be able to log into each of these instances using
+
+```
+ssh -t network "source k8s-openrc ; openstack server ssh --identity=os-default-key --login=ubuntu --public master"
+```
+
+for the master (and similarly for worker1 and worker2). At this point, the cloud-config init scripts will have initialized the first network interface (attached to the management interface), but the underlay network device is not yet configured. 
+
 
 To destroy all resources again, run
 
@@ -59,6 +67,5 @@ terraform destroy -auto-approve
 ```
 
 
-openstack server create --image ubuntu-bionic --flavor m1.large --security-group default --key-name os-default-key --nic net-id=k8s-mgmt-network master
 
 

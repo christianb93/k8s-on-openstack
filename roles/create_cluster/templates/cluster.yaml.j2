@@ -1,8 +1,50 @@
+---
 worker_nodes:
-{% for node in worker_nodes.results %}
-    {{node.server.name}}:
-         ansible_ssh_host: {{os.install_node.ip}}
-         mgmt_ip: {{( node.server.addresses[k8s_mgmt_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]  }}
-         underlay_ip: {{( node.server.addresses[k8s_underlay_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]  }}
-         floating_ip: {{  ( floating_ips.results | selectattr("item", "equalto", node.server.name) | map(attribute='floating_ip') | list )[0].floating_ip_address }}
-{% endfor %}
+    hosts:
+{%  for node in worker_nodes.results %}
+{%      set floating_ip =  ( floating_ips.results | selectattr("item", "equalto", node.server.name) | map(attribute='floating_ip') | list )[0].floating_ip_address  %}
+{%      set mgmt_ip = ( node.server.addresses[k8s_mgmt_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]  %}
+{%      set underlay_ip = ( node.server.addresses[k8s_underlay_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]   %}
+        {{node.server.name}}:
+            ansible_ssh_host: {{ floating_ip }}
+            mgmt_ip: {{ mgmt_ip }}
+            underlay_ip: {{ underlay_ip }}
+            floating_ip: {{ floating_ip }}
+            host_key_checking: false
+            ansible_python_interpreter: /usr/bin/python3
+            ansible_ssh_private_key_file: {{state_dir}}/ssh/os-default-key
+            ansible_ssh_user: ubuntu
+            ansible_ssh_common_args: >-
+                -o StrictHostKeyChecking=no 
+                -o UserKnownHostsFile=/dev/null 
+                -o "ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i {{os.install_node.ssh_key}} -W %h:%p {{os.install_node.user}}@{{os.install_node.ip}}" 
+{%  endfor %}
+
+master_nodes:
+    hosts:
+{%  for node in master_nodes.results %}
+{%      set floating_ip =  ( floating_ips.results | selectattr("item", "equalto", node.server.name) | map(attribute='floating_ip') | list )[0].floating_ip_address  %}
+{%      set mgmt_ip = ( node.server.addresses[k8s_mgmt_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]  %}
+{%      set underlay_ip = ( node.server.addresses[k8s_underlay_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]   %}
+        {{node.server.name}}:
+            ansible_ssh_host: {{ floating_ip }}
+            mgmt_ip: {{ mgmt_ip }}
+            underlay_ip: {{ underlay_ip }}
+            floating_ip: {{ floating_ip }}
+            host_key_checking: false
+            ansible_python_interpreter: /usr/bin/python3
+            ansible_ssh_private_key_file: {{state_dir}}/ssh/os-default-key
+            ansible_ssh_user: ubuntu
+            ansible_ssh_common_args: >-
+                -o StrictHostKeyChecking=no 
+                -o UserKnownHostsFile=/dev/null 
+                -o "ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i {{os.install_node.ssh_key}} -W %h:%p {{os.install_node.user}}@{{os.install_node.ip}}" 
+{%  endfor %}
+install_nodes:
+    hosts:
+        install_node:
+            ansible_ssh_host: {{os.install_node.ip}}
+            host_key_checking: false 
+            ansible_python_interpreter: /usr/bin/python3
+            ansible_ssh_private_key_file: {{os.install_node.ssh_key}}
+            ansible_ssh_user: {{os.install_node.user}}

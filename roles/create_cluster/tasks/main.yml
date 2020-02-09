@@ -75,7 +75,7 @@
   os_server:
     auth: "{{os.auth}}"      
     auth_type: password
-    name: "master"
+    name: "{{item}}"
     auto_ip: no
     flavor: "{{os.machine_templates.master_nodes.flavor}}"
     image: "{{os.machine_templates.master_nodes.image}}"
@@ -85,7 +85,9 @@
       - net-name: "{{k8s_underlay_network.network_name}}"
     security_groups:
       - "default"
-  register: master_node 
+  loop:
+    - master
+  register: master_nodes
 
 - name: Create worker nodes
   os_server:
@@ -122,8 +124,6 @@
     - master
   register: floating_ips
 
-- debug:
-    var: floating_ips
 
 - name: Create inventory file 
   template:
@@ -133,4 +133,4 @@
   fetch:
     flat: "yes"
     src: "/home/{{os.install_node.user}}/cluster.yaml"
-    dest: "{{state_dir}}/conf/cluster.yaml"
+    dest: "{{state_dir}}/config/cluster.yaml"
