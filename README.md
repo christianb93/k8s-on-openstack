@@ -38,19 +38,9 @@ To run a full installation, the following steps are needed (assuming that you ha
 ```
 ansible-playbook base/base.yaml
 ansible-playbook os/os.yaml
+ansible-playbook nodes/nodes.yaml
 ```
 
-Once these scripts complete, you should have a running OpenStack environment at your disposal. To test that this works, run the test.yaml playbook.
-
-```
-ansible-playbook os/test.yaml
-```
-
-After running this playbook, open the Horizon CLI using the instructions printed by the *os.yaml* playbook earlier and take a look at the environment which has been created, logged in as the user *test* in the *test* project, but using the password of the k8s user. 
-
-If you have an OpenStack command line client installed locally, you can also test that the API can be reached from your machine.
-
-TBD
 
 To destroy all resources again, run
 
@@ -60,4 +50,3 @@ terraform destroy -auto-approve
 ```
 
 
- go build -ldflags "-linkmode external -extldflags -static" server.go

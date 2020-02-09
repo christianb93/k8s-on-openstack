@@ -1,7 +1,6 @@
 ---
 - name: Install chrony
   apt:
-    force_apt_get: yes
     update_cache: yes
     name: chrony
     state: latest

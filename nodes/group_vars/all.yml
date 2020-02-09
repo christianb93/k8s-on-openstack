@@ -1,0 +1,19 @@
+---
+# The directory that contains our state
+state_dir: "{{playbook_dir}}/../.state"
+# The image that we will use for our instances. This image will be downloaded and stored in Glance 
+base_image_url: "http://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img"
+base_image_name: "ubuntu-bionic"
+# 
+# These settings determine the network topology. We will use them to establish an internal network 
+# called k8s-mgmt-network which we connect to the OpenStack provided external network using a router. 
+# In addition, we will create a second network called k8s-underlay-network which the pods will use 
+# Change the IP range if this conflicts with the provided external network
+#
+k8s_mgmt_network_name: "k8s-mgmt-network"
+k8s_mgmt_subnet_name: "k8s-mgmt-subnet"
+k8s_mgmt_network_cidr: "172.18.0.0/24"
+k8s_mgmt_network_gateway_ip: "172.18.0.1"
+k8s_mgmt_network_pool_start: "172.18.0.2"
+k8s_mgmt_network_pool_end: "172.18.0.100"
+k8s_mgmt_network_router_name: "k8s-router"

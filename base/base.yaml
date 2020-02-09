@@ -24,6 +24,7 @@
         - .state/ca
         - .state/credentials
         - .state/os_certs
+        - .state/config
     - name: Create SSH key pair for the stack user on GCE 
       openssh_keypair:
         mode: 0600

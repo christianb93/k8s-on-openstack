@@ -1,0 +1,33 @@
+#
+# Build dynamic inventory from config file
+#
+- name: Read config.yaml and build inventory
+  hosts: localhost 
+  become: no
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+  pre_tasks:
+    - name: Read configuration
+      include_vars:
+        file: "{{state_dir}}/config/config.yaml"
+  roles:
+    - parse_config
+  
+- name: Parse configuration on all hosts
+  hosts: all
+  gather_facts: no
+  tasks:
+  - name: Read configuration
+    include_vars:
+      file: "{{state_dir}}/config/config.yaml"
+  - name: Wait for machine to become reachable
+    wait_for_connection:
+      delay: 3
+      sleep: 5
+
+- name: Create cluster network and instances
+  hosts: install_node
+  gather_facts: yes 
+  roles:
+    - create_cluster
+  

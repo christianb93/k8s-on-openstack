@@ -1,0 +1,146 @@
+---
+- name: Create m1.nano flavor
+  os_nova_flavor:
+    auth:
+      auth_url: http://controller:5000/v3
+      username: admin
+      os_user_domain_name: "default"
+      os_project_domain_name: "default"
+      os_project_name: "admin"
+      password: "{{OS_ADMIN_PASSWORD}}"
+    auth_type: password
+    disk: "1"
+    name: m1.nano
+    ram: "128"
+    vcpus: "1"
+    state: present
+- name: Create m1.medium flavor (for worker nodes)
+  os_nova_flavor:
+    auth:
+      auth_url: http://controller:5000/v3
+      username: admin
+      os_user_domain_name: "default"
+      os_project_domain_name: "default"
+      os_project_name: "admin"
+      password: "{{OS_ADMIN_PASSWORD}}"
+    auth_type: password
+    disk: "1"
+    name: m1.medium
+    ram: "1024"
+    vcpus: "1"
+    state: present
+- name: Create m1.large flavor (for master nodes)
+  os_nova_flavor:
+    auth:
+      auth_url: http://controller:5000/v3
+      username: admin
+      os_user_domain_name: "default"
+      os_project_domain_name: "default"
+      os_project_name: "admin"
+      password: "{{OS_ADMIN_PASSWORD}}"
+    auth_type: password
+    disk: "1"
+    name: m1.large
+    ram: "4096"
+    vcpus: "2"
+    state: present
+- name: Create external, flat network (shared, owned by admin)
+  os_network:
+    auth:
+      auth_url: http://controller:5000/v3
+      username: admin
+      os_user_domain_name: "default"
+      os_project_domain_name: "default"
+      os_project_name: "admin"
+      password: "{{OS_ADMIN_PASSWORD}}"
+    auth_type: password
+    external: "yes"
+    name: external-network
+    provider_network_type: flat
+    provider_physical_network: physnet
+    shared: "true"
+    state: present
+- name: Create subnet on external network
+  os_subnet:
+    auth:
+      auth_url: http://controller:5000/v3
+      username: admin
+      os_user_domain_name: "default"
+      os_project_domain_name: "default"
+      os_project_name: "admin"
+      password: "{{OS_ADMIN_PASSWORD}}"
+    auth_type: password
+    enable_dhcp: "yes"
+    gateway_ip: 172.16.0.1
+    cidr: 172.16.0.0/24
+    network_name: external-network
+    name: external-subnet
+    state: present
+    allocation_pool_start: 172.16.0.2
+    allocation_pool_end:  172.16.0.100
+- name: create Kubernetes project
+  os_project:
+    auth:
+      auth_url: http://controller:5000/v3
+      username: admin        
+      os_user_domain_name: "default"
+      os_project_domain_name: "default"
+      os_project_name: "admin"
+      password: "{{OS_ADMIN_PASSWORD}}"
+    auth_type: password
+    description: "K8s project"
+    domain: default
+    name: k8s
+    state: present
+- name: Create Kubernetes user
+  os_user:
+    auth:
+      auth_url: http://controller:5000/v3
+      username: admin
+      os_user_domain_name: "default"
+      os_project_domain_name: "default"
+      os_project_name: "admin"
+      password: "{{OS_ADMIN_PASSWORD}}"
+    auth_type: password
+    description: "Kubernetes user"
+    domain: default
+    name: k8s
+    password: "{{OS_K8S_PASSWORD}}"
+    state: present
+- name: Assign member role to Kubernetes user
+  os_user_role:
+    auth:
+      auth_url: http://controller:5000/v3
+      username: admin
+      os_user_domain_name: "default"
+      os_project_domain_name: "default"
+      os_project_name: "admin"
+      password: "{{OS_ADMIN_PASSWORD}}"
+    auth_type: password
+    project: k8s
+    user: k8s
+    role: member
+    state: present
+- name: Import key pair as k8s user
+  os_keypair:
+    auth:
+      auth_url: http://controller:5000/v3
+      username: k8s
+      os_user_domain_name: "default"
+      os_project_domain_name: "default"
+      os_project_name: "k8s"
+      password: "{{OS_K8S_PASSWORD}}"
+    auth_type: password
+    name: os-default-key
+    public_key_file: "{{install_user_home}}/os-default-key.pub"
+- name: Create config file 
+  template:
+    src: config.yaml.j2
+    dest: "{{install_user_home}}/config.yaml"
+- name: Copy config file to localhost
+  fetch:
+    src: "{{install_user_home}}/config.yaml"
+    dest: "{{state_dir}}/config/config.yaml"
+    flat: "yes"
+
+

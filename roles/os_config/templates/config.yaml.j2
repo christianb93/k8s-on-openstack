@@ -1,0 +1,39 @@
+os:
+    # The install node. This is the node on which we will execute the playbooks during the 
+    # Kubernetes installation. 
+    install_node:
+        ip: {{hostvars.network.ansible_ssh_host}}
+        user: stack
+        ssh_key: {{state_dir}}/ssh/gcp-stack-key 
+    # We assume that our OpenStack installation contains an external network from which 
+    # we can reach the Internet. We also assume that this external network is reachable
+    # from the install host!
+    network:
+        external_network_name: external-network
+        external_network_subnet-name: external-subnet 
+    #
+    # The flavors and images that we use to bring up our Kubernetes worker nodes
+    # and our control plane node 
+    #
+    machine_templates:
+        worker_nodes:
+            flavor: m1.large
+            image: ubuntu-bionic
+        master_nodes:
+            flavor: m1.medium
+            image: ubuntu-bionic 
+    #
+    # Credentials that we use to access our OpenStack installation 
+    # The auth_url needs to be reachable from the install_node
+    #
+    auth:
+        auth_url: http://controller:5000/v3
+        username: k8s
+        os_user_domain_name: "default"
+        os_project_domain_name: "default"
+        os_project_name: "k8s"
+        password: "{{OS_K8S_PASSWORD}}"
+    # 
+    # The region name 
+    #
+    region_name: "RegionOne"
