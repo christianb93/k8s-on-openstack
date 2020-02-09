@@ -254,8 +254,6 @@
   roles:
     - os_config
 
-
-
 #
 # Print completion message and usage instructions
 #

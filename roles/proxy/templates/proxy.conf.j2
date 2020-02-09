@@ -5,8 +5,8 @@ server {
   ssl_certificate_key     /etc/nginx/certs/nginx.rsa;  
   location / {
     proxy_bind              {{mgmt_ip}};
-    proxy_pass              http://controller:{{port}};
-    sub_filter              'http://controller:' 'https://{{proxy_public_ip}}:';
+    proxy_pass              http://{{hostvars.controller.mgmt_ip}}:{{port}};
+    sub_filter              'http://{{hostvars.controller.mgmt_ip}}:' 'https://{{proxy_public_ip}}:';
     sub_filter_once         off;
     sub_filter_types        "application/json";
   }
@@ -20,7 +20,7 @@ server {
   ssl_certificate_key     /etc/nginx/certs/nginx.rsa;  
   location /horizon/ {
     proxy_bind                {{mgmt_ip}};
-    proxy_pass                http://controller/horizon/;
+    proxy_pass                http://{{hostvars.controller.mgmt_ip}}/horizon/;
     proxy_redirect            default;
     proxy_request_buffering   off;
     proxy_set_header          Upgrade $http_upgrade;
@@ -36,7 +36,7 @@ server {
   ssl_certificate_key     /etc/nginx/certs/nginx.rsa;  
   location / {
     proxy_bind                  {{mgmt_ip}};
-    proxy_pass                  http://controller:6080;
+    proxy_pass                  http://{{hostvars.controller.mgmt_ip}}:6080;
     proxy_request_buffering     off;
     proxy_http_version          1.1;
     proxy_set_header            Upgrade $http_upgrade;

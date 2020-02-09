@@ -232,6 +232,7 @@ resource "google_compute_instance" "controller" {
 
   boot_disk {
     initialize_params {
+      size = 10 
       image = google_compute_image.ubuntu_bionic_nested_virtualization.self_link
     }
   }
@@ -309,6 +310,7 @@ resource "google_compute_instance" "compute" {
 
   boot_disk {
     initialize_params {
+      size = 50
       image = google_compute_image.ubuntu_bionic_nested_virtualization.self_link
     }
   }
@@ -337,7 +339,7 @@ resource "google_compute_instance" "compute" {
 resource "google_compute_disk" "lvm_volume" {
   name          = "lvm-volume"
   description   = "This is the disk that LVM will use as a physical volume"
-  size          = 20
+  size          = 50
 }
 resource "google_compute_instance" "storage" {
   name         = "storage"

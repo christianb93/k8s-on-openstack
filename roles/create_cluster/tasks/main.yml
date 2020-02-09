@@ -12,31 +12,125 @@
     region_name: "{{os.region_name}}"
     state: present
     filename: "/home/{{os.install_node.user}}/base.img"
-- name: Create management network
+
+
+- name: Create networks
   os_network:
     auth: "{{os.auth}}"
     auth_type: password
     external: no
-    name: "{{k8s_mgmt_network_name}}"
+    name: "{{item.network_name}}"
     shared: false
     state: present
-- name: Create subnet on management network
+  loop:
+    - "{{k8s_mgmt_network}}"
+    - "{{k8s_underlay_network}}"
+- name: Create subnets
   os_subnet:
     auth: "{{os.auth}}"
     auth_type: password
     enable_dhcp: yes
-    gateway_ip: "{{k8s_mgmt_network_gateway_ip}}"
-    cidr: "{{k8s_mgmt_network_cidr}}"
-    network_name: "{{k8s_mgmt_network_name}}"
-    name: "{{k8s_mgmt_subnet_name}}"
+    gateway_ip: "{{item.gateway_ip}}"
+    cidr: "{{item.cidr}}"
+    network_name: "{{item.network_name}}"
+    name: "{{item.subnet_name}}"
     state: present
-    allocation_pool_start: "{{k8s_mgmt_network_pool_start}}"
-    allocation_pool_end:  "{{k8s_mgmt_network_pool_end}}"
+    allocation_pool_start: "{{item.pool_start}}"
+    allocation_pool_end:  "{{item.pool_end}}"
+  loop:
+    - "{{k8s_mgmt_network}}"
+    - "{{k8s_underlay_network}}"
+
 - name: Create router 
   os_router:
     auth: "{{os.auth}}"
     auth_type: password
     interfaces:
-      "{{k8s_mgmt_subnet_name}}"
-    name: "{{k8s_mgmt_network_router_name}}"
+      "{{k8s_mgmt_network.subnet_name}}"
+    name: "{{k8s_mgmt_network.router_name}}"
     network: "{{os.network.external_network_name}}"
+
+- name: Allow ICMP traffic for default security group 
+  os_security_group_rule:
+    auth: "{{os.auth}}"
+    auth_type: password
+    direction: ingress
+    protocol: icmp
+    remote_ip_prefix: "0.0.0.0/0"
+    security_group: default
+    state: present
+- name: Allow SSH traffic for default security group 
+  os_security_group_rule:
+    auth: "{{os.auth}}"
+    auth_type: password
+    direction: ingress
+    protocol: tcp
+    port_range_max: 22
+    port_range_min: 22
+    remote_ip_prefix: "0.0.0.0/0"
+    security_group: default
+    state: present        
+
+- name: Create master node
+  os_server:
+    auth: "{{os.auth}}"      
+    auth_type: password
+    name: "master"
+    auto_ip: no
+    flavor: "{{os.machine_templates.master_nodes.flavor}}"
+    image: "{{os.machine_templates.master_nodes.image}}"
+    key_name: "os-default-key"
+    nics:
+      - net-name: "{{k8s_mgmt_network.network_name}}"
+      - net-name: "{{k8s_underlay_network.network_name}}"
+    security_groups:
+      - "default"
+  register: master_node 
+
+- name: Create worker nodes
+  os_server:
+    auth: "{{os.auth}}"      
+    auth_type: password
+    name: "{{item}}"
+    auto_ip: no
+    flavor: "{{os.machine_templates.worker_nodes.flavor}}"
+    image: "{{os.machine_templates.worker_nodes.image}}"
+    key_name: "os-default-key"
+    nics:
+      - net-name: "{{k8s_mgmt_network.network_name}}"
+      - net-name: "{{k8s_underlay_network.network_name}}"
+    security_groups:
+      - "default"
+  loop:
+    - worker1
+    - worker2
+  register: worker_nodes
+
+- name: Associate floating IP addresses
+  os_floating_ip:
+    auth: "{{os.auth}}"      
+    auth_type: password
+    reuse: yes
+    nat_destination: "{{k8s_mgmt_network.network_name}}"
+    network: "{{os.network.external_network_name}}"
+    server: "{{item}}"
+    state: present
+    wait: yes
+  loop:
+    - worker1
+    - worker2
+    - master
+  register: floating_ips
+
+- debug:
+    var: floating_ips
+
+- name: Create inventory file 
+  template:
+    dest: "/home/{{os.install_node.user}}/cluster.yaml"
+    src: cluster.yaml.j2
+- name: Copy inventory file to localhost 
+  fetch:
+    flat: "yes"
+    src: "/home/{{os.install_node.user}}/cluster.yaml"
+    dest: "{{state_dir}}/conf/cluster.yaml"

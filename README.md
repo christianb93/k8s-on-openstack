@@ -18,6 +18,15 @@ This repository contains the following directories:
 * labXXX - one directory for each lab
 
 
+# Sizing of the environment
+
+Here are some considerations regarding the sizing of the environment. For the Kubernetes node, we assume the following minimum sizing:
+
+* 2 vCPUs, 4 GB RAM and 20 GB disk space for the master node
+* 1 vCPU, 2 GB RAM and 10 GB disk space for the worker nodes
+
+These instances will run on our GCE compute nodes. At the moment, we use two compute nodes, each with 2 vCPU and 7.5 GB of RAM. So the Kubernetes master node would be scheduled on one of the compute nodes and occupy both vCPUs there. The second compute node would then be able to hold two worker nodes, leaving even some RAM available. When we want to spin up additional services like a load balancer, we might need a third compute node. 
+
 
 # Preparations
 
@@ -48,5 +57,8 @@ To destroy all resources again, run
 cd base
 terraform destroy -auto-approve
 ```
+
+
+openstack server create --image ubuntu-bionic --flavor m1.large --security-group default --key-name os-default-key --nic net-id=k8s-mgmt-network master
 
 

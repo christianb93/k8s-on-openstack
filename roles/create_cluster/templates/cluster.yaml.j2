@@ -1,0 +1,8 @@
+worker_nodes:
+{% for node in worker_nodes.results %}
+    {{node.server.name}}:
+         ansible_ssh_host: {{os.install_node.ip}}
+         mgmt_ip: {{( node.server.addresses[k8s_mgmt_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]  }}
+         underlay_ip: {{( node.server.addresses[k8s_underlay_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]  }}
+         floating_ip: {{  ( floating_ips.results | selectattr("item", "equalto", node.server.name) | map(attribute='floating_ip') | list )[0].floating_ip_address }}
+{% endfor %}
