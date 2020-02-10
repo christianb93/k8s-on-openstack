@@ -34,6 +34,7 @@
     subject_alt_name: 
         - "IP:{{hostvars.master.mgmt_ip}}"
         - "IP:{{service_cidr_gateway}}"
+        - "IP:{{os.install_node.ip}}"
         - "DNS:master"
         - "IP:{{hostvars.master.floating_ip}}"
     path: "{{state_dir}}/k8s_certs/apiserver.csr"

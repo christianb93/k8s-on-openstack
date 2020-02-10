@@ -62,6 +62,14 @@ Now let us run the actual Kubernetes installation:
 ansible-playbook -i .state/config/cluster.yaml cluster/cluster.yaml
 ```
 
+We can now already test our installation, assuming that a kubectl binary is installed on the lab host. For instance, we can run
+
+```
+kubectl --kubeconfig .state/config/admin-kubeconfig get clusterroles
+```
+
+and should see the standard cluster-level roles that Kubernetes will create for us.
+
 To destroy all resources again, run
 
 ```
@@ -69,6 +77,10 @@ cd base
 terraform destroy -auto-approve
 ```
 
+TBD:
+
+* use meta to reset inventory after the nodes setup
+* copy lab1 to cluster directory
 
 
 

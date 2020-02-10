@@ -5,6 +5,14 @@
   roles:
     - k8s_node_setup
 
+- name: Read cluster configuration 
+  hosts: install_node, localhost
+  become: no 
+  tasks:
+    - name: Read cluster configuration
+      include_vars:
+        file: "{{state_dir}}/config/config.yaml"
+
 
 #
 # There are some additional certificates that we can only create now, once all
@@ -37,10 +45,6 @@
 - name: Configure proxy server on install node if possible to proxy API server 
   hosts: install_node 
   become: yes 
-  pre_tasks:
-    - name: Read cluster configuration
-      include_vars:
-        file: "{{state_dir}}/config/config.yaml"
   roles:
     - api_proxy
   
@@ -48,10 +52,6 @@
 - name: Create kubeconfig file for cluster admin
   hosts: localhost 
   become: no
-  pre_tasks:
-    - name: Read cluster configuration
-      include_vars:
-        file: "{{state_dir}}/config/config.yaml"
   vars:
     state_dir: "{{playbook_dir}}/../.state"
     client_key_file: "{{state_dir}}/k8s_certs/admin_client.rsa"
