@@ -2,6 +2,14 @@
 # Directory in which we store our state on the Ansible host
 state_dir: "{{playbook_dir}}/../.state"
 #
+# The name of the cluster
+#
+cluster_name: my-cluster
+# 
+# The cluster CIDR
+#
+cluster_cidr: 10.1.0.0/16
+#
 # The CIDR that we use for Kubernetes services
 #
 service_cidr: 10.2.0.0/24

@@ -67,6 +67,8 @@
     - k8s_certs/sa.rsa
     - k8s_certs/front_proxy_client.rsa
     - k8s_certs/admin_client.rsa
+    - k8s_certs/controller_manager.rsa
+    - k8s_certs/controller_apiserver_client.rsa
 # 
 # We known create CSRs and certificates for all our CAs
 #    
@@ -148,6 +150,9 @@
     - cn: "kubernetes-admin"
       o: "system:masters"
       path: "{{state_dir}}/k8s_certs/admin_client"
+    - cn: "system:kube-controller-manager"
+      o: ""
+      path: "{{state_dir}}/k8s_certs/controller_apiserver_client"
 
 
 - name: Create certificate signing requests for servers 
@@ -189,7 +194,8 @@
       ca: proxy_ca
     - path: "{{state_dir}}/k8s_certs/admin_client"
       ca: k8s_ca
-      
+    - path: "{{state_dir}}/k8s_certs/controller_apiserver_client"
+      ca: k8s_ca
 
 
 - name: Combine client certificate and key in one PEM file 

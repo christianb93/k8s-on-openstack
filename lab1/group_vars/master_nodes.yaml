@@ -30,3 +30,10 @@ front_proxy_ca_cert: "{{state_dir}}/ca/proxy_ca.crt"
 # when connecting to an extension API server
 front_proxy_client_cert: "{{state_dir}}/k8s_certs/front_proxy_client.crt"
 front_proxy_client_key: "{{state_dir}}/k8s_certs/front_proxy_client.rsa"
+# The key and certificate that the Kubernetes controller manager will use
+# as server certificate and key
+controller_manager_cert: "{{state_dir}}/k8s_certs/controller_manager.crt"
+controller_manager_key: "{{state_dir}}/k8s_certs/controller_manager.rsa"
+# The kubeconfig file that the Kubernetes controller manager will use
+# to connect to the API server
+controller_manager_kubeconfig: "{{state_dir}}/config/controller-manager-kubeconfig"
