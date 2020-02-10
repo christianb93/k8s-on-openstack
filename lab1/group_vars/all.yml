@@ -1,0 +1,3 @@
+---
+# Directory in which we store our state on the Ansible host
+state_dir: "{{playbook_dir}}/../.state"
