@@ -45,15 +45,13 @@ Then continue and create a key. Select the file type JSON and store the download
 To run a full installation, the following steps are needed (assuming that you have cloned this repository and your current working directory is the directory in which this README is located). We also assume that you have copied the service account key created above into this directory as well. First, run the Ansible playbooks that create the base environment in GCE and bring up the OpenStack environment 
 
 ```
-ansible-playbook base/base.yaml
-ansible-playbook os/os.yaml
-ansible-playbook nodes/nodes.yaml
+ansible-playbook site.yaml
 ```
 
-Once these commands complete, your OpenStack cluster is up and running, and three instances (which will be our master node and two worker nodes) have been spawned. You should be able to log into each of these instances using
+Once this command completes, your OpenStack cluster is up and running, and three instances (which will be our master node and two worker nodes) have been spawned. You should be able to log into each of these instances using
 
 ```
-ssh -t network "source k8s-openrc ; openstack server ssh --identity=os-default-key --login=ubuntu --public master"
+    ssh -t network "source k8s-openrc ; openstack server ssh --identity=os-default-key --login=ubuntu --public master"
 ```
 
 for the master (and similarly for worker1 and worker2). At this point, the cloud-config init scripts will have initialized the first network interface (attached to the management interface), but the underlay network device is not yet configured. 
