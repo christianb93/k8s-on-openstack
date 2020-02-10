@@ -43,20 +43,17 @@
   - proxy
 
 #
-# Import OpenStack credentials and run basic setup steps
-# on all nodes
+# Import OpenStack credentials 
 #
 - name: Basic node setup
   hosts: all
   gather_facts: no
   become: yes
-  pre_tasks:
+  tasks:
     - name: Read credentials
       include_vars:
         file: "{{state_dir}}/credentials/credentials.yaml"
-  roles:
-    - node_setup
-
+  
 #
 # Restart some services on the controller node 
 #

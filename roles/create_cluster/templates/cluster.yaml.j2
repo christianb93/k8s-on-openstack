@@ -43,7 +43,7 @@ master_nodes:
 install_nodes:
     hosts:
         install_node:
-            ansible_ssh_host: {{os.install_node.ip}}
+            ansible_ssh_host: {{os.install_node.ip}} #__install_node_ip__
             host_key_checking: false 
             ansible_python_interpreter: /usr/bin/python3
             ansible_ssh_private_key_file: {{os.install_node.ssh_key}}

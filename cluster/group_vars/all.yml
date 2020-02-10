@@ -1,0 +1,24 @@
+---
+# Directory in which we store our state on the Ansible host
+state_dir: "{{playbook_dir}}/../.state"
+#
+# The name of the cluster
+#
+cluster_name: my-cluster
+# 
+# The cluster CIDR
+#
+cluster_cidr: 10.1.0.0/16
+#
+# The CIDR that we use for Kubernetes services
+#
+service_cidr: 10.2.0.0/24
+service_cidr_gateway: 10.2.0.1
+#
+# The Kubernetes root CA certificate
+#
+k8s_ca_cert: "{{state_dir}}/ca/k8s_ca.crt"
+#
+# A download link for the kubectl binary
+#
+kubectl_binary_url: https://storage.googleapis.com/leftasexercise.com/kube-binaries/kubectl

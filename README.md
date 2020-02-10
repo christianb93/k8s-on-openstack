@@ -82,12 +82,4 @@ cd base
 terraform destroy -auto-approve
 ```
 
-TBD:
-
-* which parts of nodes.yaml and cluster.yaml do I really need to run after a restartß
-* use meta to reset inventory after the nodes setup
-* add the IP of the proxy as a separate item to the proxy section in config.yaml and use that instead of the install node public IP
-* copy lab1 to cluster directory
-
-
 

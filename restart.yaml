@@ -3,5 +3,5 @@
 - include: base/base.yaml
 # Update the OpenStack installation
 - include: os/restart.yaml
-# Bring up the Kubernetes nodes as OpenStack instances
-- include: nodes/nodes.yaml
+# Make sure that we have the correct IP address for the install_node
+- include: nodes/restart.yaml
