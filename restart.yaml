@@ -1,0 +1,7 @@
+---
+# Update the base environment (we need this, as the state, i.e. certs, contain public IP addresses)
+- include: base/base.yaml
+# Update the OpenStack installation
+- include: os/restart.yaml
+# Bring up the Kubernetes nodes as OpenStack instances
+- include: nodes/nodes.yaml

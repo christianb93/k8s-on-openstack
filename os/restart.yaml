@@ -1,0 +1,102 @@
+
+#
+# When restarting the servers on GCE, their public IP address will change
+# Here we run all steps of the OpenStack installation again which depend
+# on the public IP address of controller or network node
+#
+
+#
+# First we run the terraform role once to build our dynamic inventory
+#
+- name: Run Terraform to build dynamic inventory
+  hosts: localhost 
+  become: no
+  vars:
+    terraform_dir: "{{playbook_dir}}/../base/"
+    state_dir: "{{playbook_dir}}/../.state"
+    gcp_service_account_key: "{{playbook_dir}}/../k8s-on-openstack-sa-key.json"
+  roles:
+    - terraform 
+
+- name: Wait for all machines to become ready
+  hosts: all
+  gather_facts: no
+  tasks:
+  - name: Wait for machine to become reachable
+    wait_for_connection:
+      delay: 5
+      sleep: 10
+
+
+#
+# Rebuild proxy configuration, as it 
+# contains the public IP address of the 
+# network node in the rewrite rules
+# 
+- name: Set up proxy on network node
+  hosts: network_nodes
+  become: yes
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+    os_known_ports: ['5000', '8774', '8776', '8778', '9696', '9292', '9876']
+  roles: 
+  - proxy
+
+#
+# Import OpenStack credentials and run basic setup steps
+# on all nodes
+#
+- name: Basic node setup
+  hosts: all
+  gather_facts: no
+  become: yes
+  pre_tasks:
+    - name: Read credentials
+      include_vars:
+        file: "{{state_dir}}/credentials/credentials.yaml"
+  roles:
+    - node_setup
+
+#
+# To make sure that the new vnc_ip is used, re-run the Nova installation
+#
+- name: Install Nova on compute nodes
+  hosts: compute_nodes
+  become: yes
+  vars:
+    neutron_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    rabbitmq_password: "{{OS_SERVICE_PASSWORD}}"
+    keystone_admin_password: "{{OS_ADMIN_PASSWORD}}"
+    nova_db_user_password: "{{OS_SERVICE_PASSWORD}}"
+    nova_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    placement_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+  roles:
+    - nova_compute
+
+#
+# We also need to run os_config again as the state that it
+# produces also contains the public IP address of the network node
+# 
+- name: Run basic configuration of our new environment
+  hosts: network 
+  become: no
+  roles:
+    - os_config
+
+#
+# Print completion message and usage instructions
+#
+- name: Print completion message and usage instructions
+  hosts: localhost
+  tasks:
+    - name: Read credentials 
+      include_vars:
+        file: "{{playbook_dir}}/../.state/credentials/credentials.yaml"
+    - name: Print completion
+      debug:
+        msg: 
+          - Done. To connect to the Horizon dashboard, point your browser to 
+          - https://{{hostvars.network.ansible_ssh_host}}/horizon 
+          - and ignore certificate errors (or import {{playbook_dir}}/../.state/ca/nginx.crt into your browser). 
+          - The password for the admin user is
+          - "{{OS_ADMIN_PASSWORD}}"    
