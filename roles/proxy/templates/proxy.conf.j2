@@ -6,7 +6,7 @@ server {
   location / {
     proxy_bind              {{mgmt_ip}};
     proxy_pass              http://{{hostvars.controller.mgmt_ip}}:{{port}};
-    sub_filter              'http://{{hostvars.controller.mgmt_ip}}:' 'https://{{proxy_public_ip}}:';
+    sub_filter              'http://controller:' 'https://{{proxy_public_ip}}:';
     sub_filter_once         off;
     sub_filter_types        "application/json";
   }

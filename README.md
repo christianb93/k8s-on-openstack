@@ -68,7 +68,12 @@ We can now already test our installation, assuming that a kubectl binary is inst
 kubectl --kubeconfig .state/config/admin-kubeconfig get clusterroles
 ```
 
-and should see the standard cluster-level roles that Kubernetes will create for us.
+and should see the standard cluster-level roles that Kubernetes will create for us. If you have an OpenStack client installed locally, you can also use that to access our OpenStack installation, for instance via
+
+```
+source .state/credentials/k8s-openrc
+openstack server list
+```
 
 To destroy all resources again, run
 
@@ -80,6 +85,7 @@ terraform destroy -auto-approve
 TBD:
 
 * use meta to reset inventory after the nodes setup
+* add the IP of the proxy as a separate item to the proxy section in config.yaml and use that instead of the install node public IP
 * copy lab1 to cluster directory
 
 

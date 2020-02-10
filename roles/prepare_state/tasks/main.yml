@@ -199,3 +199,25 @@
   loop:
     - path: "{{state_dir}}/os_certs/os_client"
 
+- name: Read credentials
+  include_vars:
+    file: "{{state_dir}}/credentials/credentials.yaml"
+
+- name: Create openrc files for k8s user and admin 
+  vars:
+    user: "{{item.user}}"
+    password: "{{item.password}}"
+    public_ip: "{{item.public_ip}}"
+    project: "{{item.project}}"
+  template:
+    src: openrc.j2
+    dest: "{{state_dir}}/credentials/{{item.user}}-openrc"
+  loop:
+    - user: admin
+      project: admin
+      password: "{{OS_ADMIN_PASSWORD}}"
+      public_ip: "{{hostvars.network.ansible_ssh_host}}"
+    - user: k8s
+      project: k8s
+      password: "{{OS_K8S_PASSWORD}}"
+      public_ip: "{{hostvars.network.ansible_ssh_host}}"
