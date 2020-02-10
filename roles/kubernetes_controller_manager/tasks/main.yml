@@ -11,7 +11,7 @@
   
 - name: Copy kubeconfig file
   copy:
-    dest: "/etc/kubernetes/pki/system:kube-controller-manager-config" 
+    dest: "/etc/kubernetes/pki/kube-controller-manager-config" 
     src: "{{controller_manager_kubeconfig}}"
 
 - name: Install controller-manager binary

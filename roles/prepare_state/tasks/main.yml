@@ -69,6 +69,8 @@
     - k8s_certs/admin_client.rsa
     - k8s_certs/controller_manager.rsa
     - k8s_certs/controller_apiserver_client.rsa
+    - k8s_certs/scheduler.rsa
+    - k8s_certs/scheduler_client.rsa
 # 
 # We known create CSRs and certificates for all our CAs
 #    
@@ -153,6 +155,9 @@
     - cn: "system:kube-controller-manager"
       o: ""
       path: "{{state_dir}}/k8s_certs/controller_apiserver_client"
+    - cn: "system:kube-scheduler"
+      o: ""
+      path: "{{state_dir}}/k8s_certs/scheduler_client"
 
 
 - name: Create certificate signing requests for servers 
@@ -195,6 +200,8 @@
     - path: "{{state_dir}}/k8s_certs/admin_client"
       ca: k8s_ca
     - path: "{{state_dir}}/k8s_certs/controller_apiserver_client"
+      ca: k8s_ca
+    - path: "{{state_dir}}/k8s_certs/scheduler_client"
       ca: k8s_ca
 
 

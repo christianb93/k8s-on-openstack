@@ -1,0 +1,19 @@
+[Unit]
+Description=kube-scheduler the Kubernetes scheduler
+Documentation=http://kubernetes.io/docs/
+
+[Service]
+ExecStart=/usr/local/bin/kube-scheduler \
+  --bind-address {{mgmt_ip}} \
+  --client-ca-file /etc/kubernetes/pki/k8s_ca.crt \
+  --tls-cert-file /etc/kubernetes/pki/scheduler.crt \
+  --tls-private-key-file /etc/kubernetes/pki/scheduler.rsa \
+  --config /etc/kubernetes/conf/scheduler.conf \
+  --authentication-kubeconfig /etc/kubernetes/pki/kube-scheduler-config \
+  --authorization-kubeconfig /etc/kubernetes/pki/kube-scheduler-config 
+Restart=always
+StartLimitInterval=0
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

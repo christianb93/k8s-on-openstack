@@ -60,7 +60,9 @@
     - cn: "kube-controller-manager"
       path: "{{state_dir}}/k8s_certs/controller_manager"
       ip: "{{hostvars.master.mgmt_ip}}"
-
+    - cn: "kube-scheduler"
+      path: "{{state_dir}}/k8s_certs/scheduler"
+      ip: "{{hostvars.master.mgmt_ip}}"
 
 #
 # Issue all certificates
@@ -79,4 +81,7 @@
       ca: k8s_ca 
     - path: "{{state_dir}}/k8s_certs/controller_manager"
       ca: k8s_ca
+    - path: "{{state_dir}}/k8s_certs/scheduler"
+      ca: k8s_ca
+
 

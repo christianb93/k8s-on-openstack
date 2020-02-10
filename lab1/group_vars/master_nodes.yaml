@@ -37,3 +37,10 @@ controller_manager_key: "{{state_dir}}/k8s_certs/controller_manager.rsa"
 # The kubeconfig file that the Kubernetes controller manager will use
 # to connect to the API server
 controller_manager_kubeconfig: "{{state_dir}}/config/controller-manager-kubeconfig"
+# The key and certificate that the Kubernetes scheduler will use
+# as server certificate and key
+scheduler_cert: "{{state_dir}}/k8s_certs/scheduler.crt"
+scheduler_key: "{{state_dir}}/k8s_certs/scheduler.rsa"
+# The kubeconfig file that the Kubernetes scheduler will use
+# to connect to the API server
+scheduler_kubeconfig: "{{state_dir}}/config/scheduler-kubeconfig"

@@ -1,0 +1,47 @@
+---
+- name: Copy TLS server key pair
+  copy:
+    src: "{{scheduler_key}}"
+    dest: "/etc/kubernetes/pki/scheduler.rsa"
+- name: Copy TLS server certificate 
+  copy:
+    src: "{{scheduler_cert}}"
+    dest: "/etc/kubernetes/pki/scheduler.crt"
+
+- name: Copy kubeconfig file to master
+  copy:
+    src: "{{scheduler_kubeconfig}}"
+    dest: "/etc/kubernetes/pki/kube-scheduler-config"
+
+- name: Install scheduler binary
+  get_url:
+    url: "{{kube_scheduler_binary_url}}"
+    owner: root
+    group: root
+    mode: 0711
+    dest: "/usr/local/bin/kube-scheduler"
+
+- name: Generate systemd unit file for scheduler
+  template: 
+    src: kube-scheduler.service.j2
+    dest: /lib/systemd/system/kube-scheduler.service
+    owner: root 
+    group: root 
+    mode: 0644
+
+- name: Make sure that configuration directory exists
+  file: 
+    state: directory
+    path: "/etc/kubernetes/conf"
+
+- name: Create configuration file for kube-scheduler
+  template:
+    dest: /etc/kubernetes/conf/scheduler.conf 
+    src: scheduler.conf.j2 
+
+- name: Enable and start service 
+  service:
+    name: kube-scheduler
+    enabled: yes
+    state: restarted
+
