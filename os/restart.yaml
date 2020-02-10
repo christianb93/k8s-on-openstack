@@ -58,6 +58,20 @@
     - node_setup
 
 #
+# Restart some services on the controller node 
+#
+- name: Restart services 
+  hosts: controller_nodes
+  become: yes
+  tasks:
+    - name: Restart 
+      service:
+        name: "{{item}}"
+        state: restarted
+      loop:
+        - apache2
+
+#
 # To make sure that the new vnc_ip is used, re-run the Nova installation
 #
 - name: Install Nova on compute nodes
