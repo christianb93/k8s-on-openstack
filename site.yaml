@@ -1,0 +1,7 @@
+---
+# Create the base environment
+- include: base/base.yaml
+# Run the OpenStack installation
+- include: os/os.yaml
+# Bring up the Kubernetes nodes as OpenStack instances
+- include: nodes/nodes.yaml
