@@ -5,6 +5,17 @@ os:
         ip: {{hostvars.network.ansible_ssh_host}}
         user: stack
         ssh_key: {{state_dir}}/ssh/gcp-stack-key 
+    #
+    # We will need to configure a proxy to be able to reach the Kubernetes API from outside
+    # If (as it is the case in our standard GCE install), there is an NGINX on the install node 
+    # which we control, we can configure it here. The variable stream_config_file is a file 
+    # which we can write to configure our TLS pass-through, i.e. this is a file included by the 
+    # main server configuration on top level
+    #
+    proxy:
+        use: yes
+        stream_config_file: "/etc/nginx/modules-enabled/stream.conf"
+        service_name: "nginx"
     # We assume that our OpenStack installation contains an external network from which 
     # we can reach the Internet. We also assume that this external network is reachable
     # from the install host!

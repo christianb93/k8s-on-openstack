@@ -1,0 +1,6 @@
+stream {
+    server {
+        listen 6443;
+        proxy_pass {{hostvars.master.floating_ip}}:6443;
+    }
+}

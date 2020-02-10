@@ -46,6 +46,7 @@
   vars:
     state_dir: "{{playbook_dir}}/../.state"
     os_known_ports: ['5000', '8774', '8776', '8778', '9696', '9292', '9876']
+    proxy_api_server: "no"
   roles: 
   - proxy
 
@@ -88,7 +89,7 @@
     internal_interface_mtu: 1450
     # We open a few additional ports that we need to connect to the API, including
     # port 6080 for the VNC proxy
-    os_known_ports: ['5000', '8774', '8776', '8778', '9696', '9292', '9876','443', '6080']
+    os_known_ports: ['5000', '8774', '8776', '8778', '9696', '9292', '9876','443', '6080', '6443']
   roles:
     - vxlan_bridge
     - router 

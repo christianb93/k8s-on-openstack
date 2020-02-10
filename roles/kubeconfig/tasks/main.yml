@@ -1,0 +1,34 @@
+---
+- name: get client private key from key file 
+  shell:
+    cat {{client_key_file}}
+  register: 
+    client_key_file_out
+- name: encode as base64 
+  set_fact:
+    client_key_data: "{{client_key_file_out.stdout | b64encode }}"
+
+
+- name: get client certificate from file 
+  shell:
+    cat {{client_cert_file}}
+  register: 
+    client_cert_file_out
+- name: encode as base64 
+  set_fact:
+    client_cert_data: "{{client_cert_file_out.stdout | b64encode }}"  
+  
+- name: get CA certificate from file
+  shell:
+    cat {{cluster_ca_file}}
+  register: 
+    cluster_ca_file_out
+- name: encode as base64 
+  set_fact:
+    cluster_ca_data: "{{cluster_ca_file_out.stdout | b64encode }}"  
+    
+- name: Create kubeconfig file 
+  template:
+    src: config.j2 
+    dest: "{{kubeconfig_dest}}"
+

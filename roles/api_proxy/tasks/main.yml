@@ -1,0 +1,17 @@
+---
+#
+# Create additional proxy configuration file if
+# this is supported
+#
+- name: Create additional configuration file 
+  template:
+    src: stream.conf.j2
+    dest: "{{os.proxy.stream_config_file}}"
+  when:
+    os.proxy.use 
+- name: Restart Nginx 
+  service:
+    state: restarted
+    name: "{{os.proxy.service_name}}"
+  when:
+    os.proxy.use 

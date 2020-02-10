@@ -43,3 +43,26 @@
   shell: |
     ifup ens4 > /dev/null 2>&1 
     exit 0
+
+#
+# Make sure that we have the root CA on every node
+#
+- name: Make sure that /etc/kubernetes/pki exists 
+  file:
+    state: "directory"
+    dest: "/etc/kubernetes/pki"
+- name: Copy root CA certificate
+  copy:
+    src: "{{k8s_ca_cert}}"
+    dest: "/etc/kubernetes/pki/k8s_ca.crt"
+
+#
+# Make sure that we have the kubectl binary on every node
+#
+- name: Install kubectl binary
+  get_url:
+    url: "{{kubectl_binary_url}}"
+    owner: root
+    group: root
+    mode: 0711
+    dest: "/usr/local/bin/kubectl"

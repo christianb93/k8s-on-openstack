@@ -1,0 +1,72 @@
+---
+- name: Copy server key pair 
+  copy:
+    dest: "/etc/kubernetes/pki/apiserver.rsa"
+    src: "{{apiserver_key}}"
+- name: Copy server certificate 
+  copy:
+    dest: "/etc/kubernetes/pki/apiserver.crt"
+    src: "{{apiserver_cert}}"
+
+- name: Copy key pair for accessing the kubelet 
+  copy:
+    dest: "/etc/kubernetes/pki/apiserver_kubelet_client.rsa"
+    src: "{{apiserver_kubelet_client_key}}"
+- name: Copy certificate to use
+  copy:
+    dest: "/etc/kubernetes/pki/apiserver_kubelet_client.crt"
+    src: "{{apiserver_kubelet_client_cert}}"
+
+- name: Copy proxy CA certificate 
+  copy:
+    dest: "/etc/kubernetes/pki/proxy_ca.crt"
+    src: "{{front_proxy_ca_cert}}"
+- name: Copy front proxy client certificate 
+  copy:
+    dest: "/etc/kubernetes/pki/front_proxy_client.crt"
+    src: "{{front_proxy_client_cert}}"
+- name: Copy front proxy client key
+  copy:
+    dest: "/etc/kubernetes/pki/front_proxy_client.rsa"
+    src: "{{front_proxy_client_key}}"
+
+- name: Copy admin client certificate to master for testing purposes
+  copy:
+    dest: "/etc/kubernetes/pki/admin_client.crt"
+    src: "{{state_dir}}/k8s_certs/admin_client.crt"
+- name: Copy admin client key to master for testing purposes
+  copy:
+    dest: "/etc/kubernetes/pki/admin_client.rsa"
+    src: "{{state_dir}}/k8s_certs/admin_client.rsa"
+   
+    
+
+- name: Copy key pair to sign service accounts
+  copy:
+    dest: "/etc/kubernetes/pki/sa.rsa"
+    src: "{{sa_key}}"
+  
+  
+- name: Install API server binary
+  get_url:
+    url: "{{kube_apiserver_binary_url}}"
+    owner: root
+    group: root
+    mode: 0711
+    dest: "/usr/local/bin/kube-apiserver"
+
+- name: Generate systemd unit file for API server 
+  template: 
+    src: kube-apiserver.service.j2
+    dest: /lib/systemd/system/kube-apiserver.service
+    owner: root 
+    group: root 
+    mode: 0644
+
+- name: Enable and start service 
+  service:
+    name: kube-apiserver
+    enabled: yes
+    state: restarted
+
+  
