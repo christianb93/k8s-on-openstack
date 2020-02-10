@@ -41,7 +41,5 @@
     path: /etc/network/interfaces
 - name: Run ifup if needed
   shell: |
-    exists=$(ifquery ens4 | grep "addr" | wc -l)
-    if [ "$exists" == "0" ]; then
-      ifup ens4;
-    fi
+    ifup ens4 > /dev/null 2>&1 
+    exit 0
