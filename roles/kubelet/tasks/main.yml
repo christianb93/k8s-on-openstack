@@ -1,0 +1,62 @@
+---
+- name: Install Docker 
+  apt:
+    force_apt_get: yes
+    update_cache: yes
+    name: docker.io
+    state: latest 
+- name: Make sure that directory for Kubernetes configurations and secrets exist 
+  file:
+    state: directory
+    path: "/etc/kubernetes/{{item}}"
+  loop:
+    - conf
+    - pki
+- name: Copy root CA 
+  copy:
+    src: "{{state_dir}}/ca/k8s_ca.crt"
+    dest: /etc/kubernetes/pki/k8s_ca.crt 
+- name: Store root CA private key
+  copy:
+    src: "{{state_dir}}/ca/k8s_ca.rsa"
+    dest: /etc/kubernetes/pki/k8s_ca.rsa 
+    mode: 0600
+    owner: root 
+    group: root
+  
+
+- name: Copy TLS server key for kubelet 
+  copy:
+    src: "{{kubelet_key}}"
+    dest: "/etc/kubernetes/pki/kubelet_server.rsa"
+- name: Copy TLS server certificate for kubelet 
+  copy:
+    src: "{{kubelet_cert}}"
+    dest: "/etc/kubernetes/pki/kubelet_server.crt"
+
+   
+- name: Create bootstrap kubeconfig file
+  template:
+    src: bootstrap-kubeconfig.j2
+    dest: /etc/kubernetes/pki/bootstrap-kubeconfig
+- name: Create kubelet configuration file 
+  template:
+    src: kubelet.conf.j2 
+    dest: /etc/kubernetes/conf/kubelet.conf 
+- name: Create kubelet systemd unit file 
+  template:
+    src: kubelet.service.j2
+    dest: /lib/systemd/system/kubelet.service 
+- name: Install kubelet binary 
+  get_url:
+    url: "{{kubelet_binary_url}}"
+    dest: /usr/local/bin/kubelet
+    mode: 0700
+    owner: root
+    group: root 
+- name: Enable and start kubelet 
+  service:
+    name: kubelet
+    enabled: yes
+    state: restarted
+

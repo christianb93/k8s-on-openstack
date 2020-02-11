@@ -8,6 +8,14 @@
     src: "{{controller_manager_cert}}"
     dest: "/etc/kubernetes/pki/controller_manager.crt"
 
+#
+# For the CSR signing, we need the CA key
+#
+- name: Copy TLS server certificate
+  copy:
+    src: "{{root_ca_key}}"
+    dest: "/etc/kubernetes/pki/k8s_ca.rsa"
+
   
 - name: Copy kubeconfig file
   copy:

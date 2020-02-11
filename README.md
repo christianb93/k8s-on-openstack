@@ -17,6 +17,11 @@ This repository contains the following directories:
 * cluster - the final scripts for the Kubernetes cluster
 * labXXX - one directory for each lab
 
+The labs are structured as follows:
+
+* Lab1 - install the control plane
+* Lab2 - prepare and join the worker nodes, using Flannel as CNI provider
+
 
 # Sizing of the environment
 
@@ -51,7 +56,7 @@ ansible-playbook site.yaml
 Once this command completes, your OpenStack cluster is up and running, and three instances (which will be our master node and two worker nodes) have been spawned. You should be able to log into each of these instances using
 
 ```
-    ssh -t network "source k8s-openrc ; openstack server ssh --identity=os-default-key --login=ubuntu --public master"
+ssh -t network "source k8s-openrc ; openstack server ssh --identity=os-default-key --login=ubuntu --public master"
 ```
 
 for the master (and similarly for worker1 and worker2). At this point, the cloud-config init scripts will have initialized the first network interface (attached to the management interface), but the underlay network device is not yet configured. 

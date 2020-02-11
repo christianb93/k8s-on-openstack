@@ -22,7 +22,7 @@ variable "region" {
 # The zone in which we bring up our resources
 variable "zone" {
   type = string
-  default = "europe-west3-c"
+  default = "europe-west3-a"
 }
 
 # The file in which the public key for the stack user is stored

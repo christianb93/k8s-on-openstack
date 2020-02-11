@@ -71,6 +71,7 @@
     - k8s_certs/controller_apiserver_client.rsa
     - k8s_certs/scheduler.rsa
     - k8s_certs/scheduler_client.rsa
+    - k8s_certs/kubelet.rsa
 # 
 # We known create CSRs and certificates for all our CAs
 #    
@@ -234,3 +235,33 @@
       project: k8s
       password: "{{OS_K8S_PASSWORD}}"
       public_ip: "{{hostvars.network.ansible_ssh_host}}"
+
+- name: Check whether bootstrap token exists 
+  stat:
+    path: "{{state_dir}}/credentials/bootstrap_token"
+  register: bootstrap_token_file
+- name: Create bootstrap token if it does not yet exist
+  shell: |
+    tokenID=$(head -c 16 /dev/random  | od -An -t x2 |  tr -d "\n " | head -c 6)
+    tokenSecret=$(head -c 16 /dev/random  | od -An -t x2 |  tr -d "\n " | head -c 16)
+    echo "$tokenID.$tokenSecret" > {{state_dir}}/credentials/bootstrap_token
+  when: bootstrap_token_file.stat.exists == false
+- name: Read bootstrap token 
+  shell:
+    cat {{state_dir}}/credentials/bootstrap_token
+  register: 
+    bootstrap_token_out 
+- name: Remember bootstrap token  as fact for later use 
+  set_fact:
+    bootstrap_token: "{{bootstrap_token_out.stdout}}"
+- name: Split into token ID and token secret
+  set_fact:
+    token_id: "{{bootstrap_token[0:6]}}"
+    token_secret: "{{bootstrap_token[7:23]}}"
+
+- name: Create manifest for bootstrap token secret
+  template: 
+    src: bootstrapTokenSecret.yaml.j2
+    dest: "{{state_dir}}/credentials/bootstrapTokenSecret.yaml"
+
+

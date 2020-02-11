@@ -1,0 +1,19 @@
+---
+- name: Make sure that /opt/cni/bin exists
+  file:
+    path: "/opt/cni/bin"
+    state: directory
+- name: Copy binaries
+  get_url:
+    url: "{{cni_plugins_binary_url_base}}/{{item}}"
+    owner: root
+    group: root
+    mode: 0711
+    dest: "/opt/cni/bin/{{item}}"
+  loop:
+    - flannel
+    - loopback
+    - portmap
+    - bridge
+    - host-local  
+    
