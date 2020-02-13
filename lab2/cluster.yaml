@@ -142,3 +142,4 @@
     state_dir: "{{playbook_dir}}/../.state"
   roles:
     - kube_proxy
+    - flannel
