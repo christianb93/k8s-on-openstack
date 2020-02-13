@@ -112,3 +112,34 @@
     kube_scheduler_binary_url: https://storage.googleapis.com/leftasexercise.com/kube-binaries/kube-scheduler
   roles:
     - kubernetes_scheduler
+
+# 
+# We are now done with the installation of the control plane and are ready to install the worker nodes
+#
+
+- name: Prepare bootstrap procedure  
+  hosts: localhost 
+  become: no 
+  vars: 
+    state_dir: "{{playbook_dir}}/../.state"
+  roles:
+    - prepare_tls_bootstrap
+
+- name: Install kubelet and CNI plugins
+  hosts: worker_nodes
+  become: yes 
+  vars:
+    kubelet_binary_url: https://storage.googleapis.com/leftasexercise.com/kube-binaries/kubelet
+    cni_plugins_binary_url_base: https://storage.googleapis.com/leftasexercise.com/kube-binaries
+  roles: 
+    - kubelet 
+    - cni_plugins
+
+- name: Install kubeproxy and Flannel as DaemonSet
+  hosts: localhost
+  become: no 
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+  roles:
+    - kube_proxy
+    - flannel

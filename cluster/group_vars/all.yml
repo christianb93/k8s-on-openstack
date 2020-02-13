@@ -1,5 +1,7 @@
 ---
+# 
 # Directory in which we store our state on the Ansible host
+#
 state_dir: "{{playbook_dir}}/../.state"
 #
 # The name of the cluster
@@ -22,3 +24,12 @@ k8s_ca_cert: "{{state_dir}}/ca/k8s_ca.crt"
 # A download link for the kubectl binary
 #
 kubectl_binary_url: https://storage.googleapis.com/leftasexercise.com/kube-binaries/kubectl
+#
+# Cluster DNS server to use 
+#
+cluster_dns: 10.2.0.10
+#
+# External DNS server to use for requests
+# which cannot be resolved by the in-cluster DNS
+#
+external_dns_server: 8.8.8.8
