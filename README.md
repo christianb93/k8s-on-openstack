@@ -87,4 +87,8 @@ cd base
 terraform destroy -auto-approve
 ```
 
+TBD: restart script cluster:
+
+- recreate kubeconfig (contains network node IP)
+- restart etcd (hangs sometimes)
 
