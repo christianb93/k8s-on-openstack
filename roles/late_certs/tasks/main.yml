@@ -102,8 +102,6 @@
       ca: k8s_ca
     - path: "{{state_dir}}/k8s_certs/scheduler"
       ca: k8s_ca
-    - path: "{{state_dir}}/k8s_certs/kubelet"
-      ca: k8s_ca
 
 - name: Create certificates for Kubelet
   openssl_certificate:
