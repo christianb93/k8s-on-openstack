@@ -29,8 +29,8 @@ data:
     clusters:
     - cluster:
         certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        server: "https://{{os.install_node.ip}}:6443"
-    name: {{cluster_name}}
+        server: "https://{{hostvars.master.mgmt_ip}}:6443"
+      name: {{cluster_name}}
     contexts:
     - context:
         cluster: {{cluster_name}}
@@ -41,8 +41,16 @@ data:
     preferences: {}
     users:
     - name: default
-    user:
+      user:
         tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token  
+  kube-proxy-config: |
+    kind: KubeProxyConfiguration
+    apiVersion: kubeproxy.config.k8s.io/v1alpha1
+    clientConnection:
+      kubeconfig: "/etc/kubernetes/conf/kubeconfig"
+    mode: "iptables"
+    clusterCIDR: "{{cluster_cidr}}"    
+
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -87,10 +95,12 @@ spec:
       containers:
       - name: kube-proxy
         image: "k8s.gcr.io/kube-proxy-amd64:v1.17.1"
+        # image: "busybox"
         command:
         - /bin/sh
         - -c
-        - kube-proxy --cluster-cidr {{cluster_cidr}} --kubeconfig /etc/kubernetes/conf/kubeconfig
+        - kube-proxy --config /etc/kubernetes/conf/kube-proxy-config
+        #- sleep 10000
         env:
         - name: NODE_NAME
           valueFrom:

@@ -135,7 +135,7 @@
     - kubelet 
     - cni_plugins
 
-- name: Install kubeproxy as DaemonSet
+- name: Install kubeproxy and Flannel as DaemonSet
   hosts: localhost
   become: no 
   vars:
