@@ -31,7 +31,7 @@
     dest: "/etc/kubernetes/pki/kubelet_server.rsa"
 - name: Copy TLS server certificate for kubelet 
   copy:
-    src: "{{kubelet_cert}}"
+    src: "{{kubelet_cert_root}}-{{inventory_hostname}}.crt"
     dest: "/etc/kubernetes/pki/kubelet_server.crt"
 
    
