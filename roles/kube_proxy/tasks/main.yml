@@ -1,0 +1,10 @@
+---
+- name: Create manifest file
+  template:
+    src: kube_proxy.yaml.j2
+    dest: "{{state_dir}}/config/kube_proxy.yaml"
+
+- name: Apply the newly generated manifest file 
+  shell: |
+    kubectl --kubeconfig={{state_dir}}/config/admin-kubeconfig apply -f {{state_dir}}/config/kube_proxy.yaml
+

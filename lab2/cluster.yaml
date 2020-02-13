@@ -134,3 +134,11 @@
   roles: 
     - kubelet 
     - cni_plugins
+
+- name: Install kubeproxy as DaemonSet
+  hosts: localhost
+  become: no 
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+  roles:
+    - kube_proxy
