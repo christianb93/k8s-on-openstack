@@ -24,7 +24,7 @@
     state: present
   loop:
     - "{{k8s_mgmt_network}}"
-    - "{{k8s_underlay_network}}"
+
 - name: Create subnets
   os_subnet:
     auth: "{{os.auth}}"
@@ -39,7 +39,6 @@
     allocation_pool_end:  "{{item.pool_end}}"
   loop:
     - "{{k8s_mgmt_network}}"
-    - "{{k8s_underlay_network}}"
 
 - name: Create router 
   os_router:
@@ -94,7 +93,6 @@
     key_name: "os-default-key"
     nics:
       - net-name: "{{k8s_mgmt_network.network_name}}"
-      - net-name: "{{k8s_underlay_network.network_name}}"
     security_groups:
       - "default"
   loop:
@@ -112,7 +110,6 @@
     key_name: "os-default-key"
     nics:
       - net-name: "{{k8s_mgmt_network.network_name}}"
-      - net-name: "{{k8s_underlay_network.network_name}}"
     security_groups:
       - "default"
   loop:

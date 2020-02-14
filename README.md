@@ -61,7 +61,7 @@ Once this command completes, your OpenStack cluster is up and running, and three
 ssh -t network "source k8s-openrc ; openstack server ssh --identity=os-default-key --login=ubuntu --public master"
 ```
 
-for the master (and similarly for worker1 and worker2). At this point, the cloud-config init scripts will have initialized the first network interface (attached to the management interface), but the underlay network device is not yet configured. 
+for the master (and similarly for worker1 and worker2). 
 
 Now let us run the actual Kubernetes installation:
 

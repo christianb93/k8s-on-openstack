@@ -7,8 +7,6 @@ base_image_name: "ubuntu-bionic"
 # 
 # These settings determine the network topology. We will use them to establish an internal network 
 # called k8s-mgmt-network which we connect to the OpenStack provided external network using a router. 
-# In addition, we will create a second network called k8s-underlay-network which the pods will use 
-# Change the IP range if this conflicts with the provided external network
 #
 k8s_mgmt_network:
   network_name: "k8s-mgmt-network"
@@ -19,10 +17,3 @@ k8s_mgmt_network:
   pool_end: "172.18.0.100"
   router_name: "k8s-router"
 
-k8s_underlay_network:
-  network_name: "k8s-underlay-network"
-  subnet_name: "k8s-underlay-subnet"
-  cidr: "172.19.0.0/24"
-  gateway_ip: "172.19.0.1"
-  pool_start: "172.19.0.2"
-  pool_end: "172.19.0.100"

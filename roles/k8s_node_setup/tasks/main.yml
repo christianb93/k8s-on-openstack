@@ -14,35 +14,6 @@
   loop_control:
     label: "{{ item[0] }}"
 
-#
-# Install ifupdown
-# 
-- name: Install ifupdown
-  apt:
-    name: ifupdown
-    state: present 
-    update_cache: yes
-    force_apt_get: yes
-
-
-# 
-# Set up underlay network interface
-#
-- name: Create configuration for ens4
-  template:
-    src: 90-k8s.j2
-    dest: /etc/network/interfaces.d/90-k8s
-    mode: 0644
-    owner: root
-- name: Make sure that file is sourced in /etc/network/interfaces
-  lineinfile:
-    line: "source /etc/network/interfaces.d/90-k8s"
-    state: present
-    path: /etc/network/interfaces
-- name: Run ifup if needed
-  shell: |
-    ifup ens4 > /dev/null 2>&1 
-    exit 0
 
 #
 # Make sure that we have the root CA on every node
