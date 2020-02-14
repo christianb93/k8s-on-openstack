@@ -45,7 +45,7 @@ Once the service account has been generated, you will need to assign a couple of
 
 Then continue and create a key. Select the file type JSON and store the downloaded file as *k8s-on-openstack-sa-key.json*. To enable your new project, you will have to use the console to visit the Compute Engine and VPC Network pages once. 
 
-Of course you will need Ansible and Terraform. I used Ansible 2.8.6 (install with `pip3 install ansible==2.8.6`) and Terraform v0.12.10 (note that some versions of Ansible around 2.9 have a broken OpenStack network module). When you want to validate the install, you will also need an OpenStack client (`apt-get install python3-openstackclient`) and kubectl (`curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.1/bin/linux/amd64/kubectl')
+Of course you will need Ansible and Terraform. I used Ansible 2.8.6 (install with `pip3 install ansible==2.8.6`) and Terraform v0.12.10 (note that some versions of Ansible around 2.9 have a broken OpenStack network module). When you want to validate the install, you will also need an OpenStack client (`apt-get install python3-openstackclient`) and kubectl (`curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.17.1/bin/linux/amd64/kubectl`)
 
 # Running 
 
