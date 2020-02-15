@@ -143,3 +143,11 @@
   roles:
     - kube_proxy
     - flannel
+
+- name: Install CoreDNS 
+  hosts: localhost
+  become: no
+  vars_files:
+    "{{playbook_dir}}/group_vars/all.yml"
+  roles:
+    - core_dns

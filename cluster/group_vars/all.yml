@@ -32,4 +32,4 @@ cluster_dns: 10.2.0.10
 # External DNS server to use for requests
 # which cannot be resolved by the in-cluster DNS
 #
-external_dns_server: 8.8.8.8
+external_dns_server: 1.1.1.1

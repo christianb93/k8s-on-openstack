@@ -1,0 +1,8 @@
+---
+- name: Create CoreDNS manifest file 
+  template:
+    src: coredns.yaml.j2
+    dest: "{{state_dir}}/config/coredns.yaml"
+- name: Run coredns
+  shell: 
+    kubectl --kubeconfig {{state_dir}}/config/admin-kubeconfig apply -f {{state_dir}}/config/coredns.yaml
