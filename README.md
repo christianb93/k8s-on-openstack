@@ -61,7 +61,7 @@ Once this command completes, your OpenStack cluster is up and running, and three
 ssh -t network "source k8s-openrc ; openstack server ssh --identity=os-default-key --login=ubuntu --public master"
 ```
 
-for the master (and similarly for worker1 and worker2). 
+for the master (and similarly for worker1 and worker2).     
 
 Now let us run the actual Kubernetes installation:
 
@@ -72,7 +72,8 @@ ansible-playbook -i .state/config/cluster.yaml cluster/cluster.yaml
 We can now already test our installation, assuming that a kubectl binary is installed on the lab host. For instance, we can run
 
 ```
-kubectl --kubeconfig .state/config/admin-kubeconfig get clusterroles
+export KUBECONFIG=.state/config/admin-kubeconfig
+kubectl get clusterroles
 ```
 
 and should see the standard cluster-level roles that Kubernetes will create for us. If you have an OpenStack client installed locally, you can also use that to access our OpenStack installation, for instance via
@@ -89,8 +90,29 @@ cd base
 terraform destroy -auto-approve
 ```
 
-TBD: restart script cluster:
+To only destroy the network and servers in the cluster, run
+```
+source .state/credentials/k8s-openrc
+servers=$(openstack server list -f value -c Name)
+for server in $servers; do
+  openstack server delete $server;
+done
+fips=$(openstack floating ip list -f value -c ID )
+for fip in $fips; do
+  openstack floating ip delete $fip;
+done
+openstack router remove subnet k8s-router k8s-node-subnet
+openstack router delete k8s-router
+openstack network delete k8s-node-network
+```
 
-- recreate kubeconfig (contains network node IP)
-- restart etcd (hangs sometimes)
+and then re-run *nodes/nodes.yaml* and *cluster/cluster.yaml*. 
+
+TBD: 
+
+* rename management network to node network
+* add description of rules for nodePorts to TeX
+* do some tests with networking and services and make a picture displaying the kube-proxy chains and rules (should have separate tests directory with Kubernetes manifests)
+* fix deprecation message when using include in Ansible playbook
+* provide restart script cluster. At least, we need to recreate kubeconfig (contains network node IP) and restart etcd (hangs sometimes)
 

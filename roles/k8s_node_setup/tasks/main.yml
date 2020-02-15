@@ -4,7 +4,7 @@
 #
 - name: Ensure entries for all nodes exist in /etc/hosts
   lineinfile:
-    line: "{{ item[1].mgmt_ip}} {{ item[0] }}"
+    line: "{{ item[1].node_ip}} {{ item[0] }}"
     state: present
     path: /etc/hosts
   loop:

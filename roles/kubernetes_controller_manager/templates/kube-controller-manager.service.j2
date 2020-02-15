@@ -4,7 +4,7 @@ Documentation=http://kubernetes.io/docs/
 
 [Service]
 ExecStart=/usr/local/bin/kube-controller-manager \
-  --bind-address {{mgmt_ip}} \
+  --bind-address {{node_ip}} \
   --client-ca-file /etc/kubernetes/pki/k8s_ca.crt \
   --kubeconfig /etc/kubernetes/pki/kube-controller-manager-config \
   --authorization-kubeconfig /etc/kubernetes/pki/kube-controller-manager-config \

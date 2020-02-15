@@ -6,12 +6,12 @@ Documentation=http://kubernetes.io/docs/
 ExecStart=/usr/local/bin/kube-apiserver \
    --authorization-mode Node,RBAC \
    --enable-bootstrap-token-auth \
-   --bind-address {{mgmt_ip}} \
+   --bind-address {{node_ip}} \
    --client-ca-file /etc/kubernetes/pki/k8s_ca.crt  \
    --etcd-cafile /etc/kubernetes/pki/etcd_ca.crt \
    --etcd-certfile /etc/kubernetes/pki/apiserver_etcd_client.crt \
    --etcd-keyfile /etc/kubernetes/pki/apiserver_etcd_client.rsa \
-   --etcd-servers https://{{mgmt_ip}}:2379 \
+   --etcd-servers https://{{node_ip}}:2379 \
    --kubelet-certificate-authority /etc/kubernetes/pki/k8s_ca.crt \
    --kubelet-client-certificate /etc/kubernetes/pki/apiserver_kubelet_client.crt \
    --kubelet-client-key /etc/kubernetes/pki/apiserver_kubelet_client.rsa \

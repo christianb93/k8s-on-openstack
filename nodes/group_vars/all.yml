@@ -6,11 +6,11 @@ base_image_url: "http://cloud-images.ubuntu.com/bionic/current/bionic-server-clo
 base_image_name: "ubuntu-bionic"
 # 
 # These settings determine the network topology. We will use them to establish an internal network 
-# called k8s-mgmt-network which we connect to the OpenStack provided external network using a router. 
+# called k8s-node-network which we connect to the OpenStack provided external network using a router. 
 #
-k8s_mgmt_network:
-  network_name: "k8s-mgmt-network"
-  subnet_name: "k8s-mgmt-subnet"
+k8s_node_network:
+  network_name: "k8s-node-network"
+  subnet_name: "k8s-node-subnet"
   cidr: "172.18.0.0/24"
   gateway_ip: "172.18.0.1"
   pool_start: "172.18.0.2"

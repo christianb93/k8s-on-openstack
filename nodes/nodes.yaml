@@ -1,5 +1,6 @@
 #
 # Build dynamic inventory from config file
+# that the previous play has created for us
 #
 - name: Read config.yaml and build inventory
   hosts: localhost 

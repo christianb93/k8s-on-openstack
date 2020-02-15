@@ -12,6 +12,6 @@ authorization:
 clusterDomain: "cluster.local"
 clusterDNS:
   - "{{cluster_dns}}"
-address: "{{mgmt_ip}}"
+address: "{{node_ip}}"
 tlsCertFile: /etc/kubernetes/pki/kubelet_server.crt 
 tlsPrivateKeyFile: /etc/kubernetes/pki/kubelet_server.rsa

@@ -29,7 +29,7 @@ data:
     clusters:
     - cluster:
         certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        server: "https://{{hostvars.master.mgmt_ip}}:6443"
+        server: "https://{{hostvars.master.node_ip}}:6443"
       name: {{cluster_name}}
     contexts:
     - context:

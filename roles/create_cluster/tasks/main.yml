@@ -23,7 +23,7 @@
     shared: false
     state: present
   loop:
-    - "{{k8s_mgmt_network}}"
+    - "{{k8s_node_network}}"
 
 - name: Create subnets
   os_subnet:
@@ -38,15 +38,15 @@
     allocation_pool_start: "{{item.pool_start}}"
     allocation_pool_end:  "{{item.pool_end}}"
   loop:
-    - "{{k8s_mgmt_network}}"
+    - "{{k8s_node_network}}"
 
 - name: Create router 
   os_router:
     auth: "{{os.auth}}"
     auth_type: password
     interfaces:
-      "{{k8s_mgmt_network.subnet_name}}"
-    name: "{{k8s_mgmt_network.router_name}}"
+      "{{k8s_node_network.subnet_name}}"
+    name: "{{k8s_node_network.router_name}}"
     network: "{{os.network.external_network_name}}"
 
 - name: Allow ICMP traffic for default security group 
@@ -92,7 +92,7 @@
     image: "{{os.machine_templates.master_nodes.image}}"
     key_name: "os-default-key"
     nics:
-      - net-name: "{{k8s_mgmt_network.network_name}}"
+      - net-name: "{{k8s_node_network.network_name}}"
     security_groups:
       - "default"
   loop:
@@ -109,7 +109,7 @@
     image: "{{os.machine_templates.worker_nodes.image}}"
     key_name: "os-default-key"
     nics:
-      - net-name: "{{k8s_mgmt_network.network_name}}"
+      - net-name: "{{k8s_node_network.network_name}}"
     security_groups:
       - "default"
   loop:
@@ -122,7 +122,7 @@
     auth: "{{os.auth}}"      
     auth_type: password
     reuse: yes
-    nat_destination: "{{k8s_mgmt_network.network_name}}"
+    nat_destination: "{{k8s_node_network.network_name}}"
     network: "{{os.network.external_network_name}}"
     server: "{{item}}"
     state: present

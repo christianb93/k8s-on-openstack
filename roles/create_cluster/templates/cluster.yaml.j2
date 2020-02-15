@@ -3,10 +3,10 @@ worker_nodes:
     hosts:
 {%  for node in worker_nodes.results %}
 {%      set floating_ip =  ( floating_ips.results | selectattr("item", "equalto", node.server.name) | map(attribute='floating_ip') | list )[0].floating_ip_address  %}
-{%      set mgmt_ip = ( node.server.addresses[k8s_mgmt_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]  %}
+{%      set node_ip = ( node.server.addresses[k8s_node_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]  %}
         {{node.server.name}}:
             ansible_ssh_host: {{ floating_ip }}
-            mgmt_ip: {{ mgmt_ip }}
+            node_ip: {{ node_ip }}
             floating_ip: {{ floating_ip }}
             host_key_checking: false
             ansible_python_interpreter: /usr/bin/python3
@@ -22,10 +22,10 @@ master_nodes:
     hosts:
 {%  for node in master_nodes.results %}
 {%      set floating_ip =  ( floating_ips.results | selectattr("item", "equalto", node.server.name) | map(attribute='floating_ip') | list )[0].floating_ip_address  %}
-{%      set mgmt_ip = ( node.server.addresses[k8s_mgmt_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]  %}
+{%      set node_ip = ( node.server.addresses[k8s_node_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]  %}
         {{node.server.name}}:
             ansible_ssh_host: {{ floating_ip }}
-            mgmt_ip: {{ mgmt_ip }}
+            node_ip: {{ node_ip }}
             floating_ip: {{ floating_ip }}
             host_key_checking: false
             ansible_python_interpreter: /usr/bin/python3
