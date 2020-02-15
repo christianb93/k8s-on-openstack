@@ -110,9 +110,6 @@ and then re-run *nodes/nodes.yaml* and *cluster/cluster.yaml*.
 
 TBD: 
 
-* rename management network to node network
-* add description of rules for nodePorts to TeX
-* do some tests with networking and services and make a picture displaying the kube-proxy chains and rules (should have separate tests directory with Kubernetes manifests)
 * fix deprecation message when using include in Ansible playbook
 * provide restart script cluster. At least, we need to recreate kubeconfig (contains network node IP) and restart etcd (hangs sometimes)
 
