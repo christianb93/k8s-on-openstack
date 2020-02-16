@@ -4,4 +4,4 @@
 # Update the OpenStack installation
 - include: os/restart.yaml
 # Make sure that we have the correct IP address for the install_node
-- include: nodes/restart.yaml
+- include: nodes/nodes.yaml

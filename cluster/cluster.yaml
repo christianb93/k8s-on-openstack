@@ -151,3 +151,4 @@
     "{{playbook_dir}}/group_vars/all.yml"
   roles:
     - core_dns
+    
