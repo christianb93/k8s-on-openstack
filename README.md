@@ -83,7 +83,7 @@ source .state/credentials/k8s-openrc
 openstack server list
 ```
 
-To destroy all resources again, run
+Some test scenarios can be found in the tests directory. Once you are done, you might want to destroy all resources again. For that purpose, run
 
 ```
 cd base
@@ -108,8 +108,19 @@ openstack network delete k8s-node-network
 
 and then re-run *nodes/nodes.yaml* and *cluster/cluster.yaml*. 
 
+
+# Binaries and versions used
+
+This installation requires several binaries for the Kubernetes components and the Flannel CNI plugin. For convenience, I have put a version of these binaries into a Google storage bucket, where the installation scripts will retrieve them. If you want to use your own copies, you can of course modify the files in *groups_vars* accordingly. The default binaries that I use are from the following sources.
+
+* The Kubernetes binaries are taken from [release 1.17.1](https://github.com/kubernetes/kubernetes/releases/tag/v1.17.1), using the download links for the server and client binaries provided in the [release notes](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.17.md#downloads-for-v1171). Specifically, I downloaded [the server tar](https://dl.k8s.io/v1.17.1/kubernetes-server-linux-amd64.tar.gz) and [the node tar](https://dl.k8s.io/v1.17.1/kubernetes-node-linux-amd64.tar.gz), extracted them and uploaded the binaries to Google storage.
+* The reference CNI plugins are taken from [release v0.8.5](https://github.com/containernetworking/plugins/releases/tag/v0.8.5), specifically from [this download link](https://github.com/containernetworking/plugins/releases/download/v0.8.5/cni-plugins-linux-amd64-v0.8.5.tgz)
+* The binaries of those components that we deploy as pods (like kube-proxy, Flannel or CoreDNS) are of course specified in the respective manifest files. For kube-proxy, we use release v1.17.1 as well. For Flannel, I use version v0.11.0-amd64, and CoreDNS is used in version 1.6.5
+* The underlying OpenStack release is the Stein release, mostly taking from the official Ubuntu Bionic cloud archive
+
 TBD: 
 
+* document where our binaries (kubernetes, cni plugins) come from
 * fix deprecation message when using include in Ansible playbook
 * provide restart script cluster. At least, we need to recreate kubeconfig (contains network node IP) and restart etcd (hangs sometimes)
 
