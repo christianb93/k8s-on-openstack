@@ -380,7 +380,7 @@ output "inventory" {
         "mgmt_ip"          : "${google_compute_instance.controller.network_interface.1.network_ip}",
         "underlay_ip"      : "",
         "ansible_ssh_user" : "stack",
-        "private_key_file" : "${var.stack_private_ssh_key_file}",
+        "private_key_file" : "${abspath(var.stack_private_ssh_key_file)}",
         "ssh_args"         : "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" 
       } ],
       [ {
@@ -390,7 +390,7 @@ output "inventory" {
         "mgmt_ip"          : "${google_compute_instance.network.network_interface.1.network_ip}",
         "underlay_ip"      : "${google_compute_instance.network.network_interface.2.network_ip}",
         "ansible_ssh_user" : "stack",
-        "private_key_file" : "${var.stack_private_ssh_key_file}",
+        "private_key_file" : "${abspath(var.stack_private_ssh_key_file)}",
         "ssh_args"         : "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" 
       } ],
       [ {
@@ -400,9 +400,9 @@ output "inventory" {
         "mgmt_ip"          : "${google_compute_instance.storage.network_interface.0.network_ip}",
         "underlay_ip"      : "",
         "ansible_ssh_user" : "stack",
-        "private_key_file" : "${var.stack_private_ssh_key_file}",
+        "private_key_file" : "${abspath(var.stack_private_ssh_key_file)}",
         "extra_ssh_config_items"  :  "ProxyJump network",
-        "ssh_args"         : "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o \"ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${var.stack_private_ssh_key_file} -W %h:%p stack@${google_compute_instance.network.network_interface.0.access_config.0.nat_ip}\"" 
+        "ssh_args"         : "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o \"ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${abspath(var.stack_private_ssh_key_file)} -W %h:%p stack@${google_compute_instance.network.network_interface.0.access_config.0.nat_ip}\"" 
       } ],
       [ for s in google_compute_instance.compute[*] : {
         # Note that we use the management IP as SSH target IP as we use the network node as the jump host
@@ -414,7 +414,7 @@ output "inventory" {
         "ansible_ssh_user"        : "stack",
         "private_key_file"        : "${var.stack_private_ssh_key_file}",
         "extra_ssh_config_items"  :  "ProxyJump network",
-        "ssh_args"                : "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o \"ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${var.stack_private_ssh_key_file} -W %h:%p stack@${google_compute_instance.network.network_interface.0.access_config.0.nat_ip}\"" 
+        "ssh_args"                : "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o \"ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${abspath(var.stack_private_ssh_key_file)} -W %h:%p stack@${google_compute_instance.network.network_interface.0.access_config.0.nat_ip}\"" 
       } ]
    )
 }
