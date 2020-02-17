@@ -117,8 +117,9 @@ resource "google_compute_firewall" "public-firewall" {
   }
 
   # If you loose connectivity to your instance and want to use the browser-based
-  # SSH from Google's console, uncomment the line below and re-apply 
-  source_ranges = ["${chomp(data.http.myip.body)}/32"]
+  # SSH from Google's console, uncomment the second line below and re-apply 
+  # source_ranges = ["${chomp(data.http.myip.body)}/32"]
+  source_ranges = ["0.0.0.0/0"]
 
 }
 
