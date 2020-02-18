@@ -123,4 +123,5 @@ TBD:
 * why are pods not rescheduled when we delete a node?
 * fix deprecation message when using include in Ansible playbook
 * provide restart script cluster. At least, we need to recreate kubeconfig (contains network node IP) and restart etcd (hangs sometimes)
+* should probabyl adapt etcd systemd unit file to restart on exit
 
