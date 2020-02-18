@@ -412,7 +412,7 @@ output "inventory" {
         "mgmt_ip"                 : "${s.network_interface.0.network_ip}",
         "underlay_ip"             : "${s.network_interface.1.network_ip}",
         "ansible_ssh_user"        : "stack",
-        "private_key_file"        : "${var.stack_private_ssh_key_file}",
+        "private_key_file"        : "${abspath(var.stack_private_ssh_key_file)}",
         "extra_ssh_config_items"  :  "ProxyJump network",
         "ssh_args"                : "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o \"ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ${abspath(var.stack_private_ssh_key_file)} -W %h:%p stack@${google_compute_instance.network.network_interface.0.access_config.0.nat_ip}\"" 
       } ]
