@@ -61,7 +61,7 @@ Once this command completes, your OpenStack cluster is up and running, and three
 ssh -t network "source k8s-openrc ; openstack server ssh --identity=os-default-key --login=ubuntu --public master"
 ```
 
-for the master (and similarly for worker1 and worker2).     
+for the master (and similarly for worker1 and worker2). Note that it might take a couple of minutes for the instances to become available and to fully complete their startup procedure.
 
 Now let us run the actual Kubernetes installation:
 
@@ -120,8 +120,8 @@ This installation requires several binaries for the Kubernetes components and th
 
 TBD: 
 
-* why are pods not rescheduled when we delete a node?
+* should probably adapt etcd systemd unit file to restart on exit
+* why are pods not rescheduled when we delete a node? Usually it should take 40 seconds until the node is marked as notReady and then up to 5 minutes until the evicition is done - check
 * fix deprecation message when using include in Ansible playbook
 * provide restart script cluster. At least, we need to recreate kubeconfig (contains network node IP) and restart etcd (hangs sometimes)
-* should probabyl adapt etcd systemd unit file to restart on exit
 
