@@ -1,0 +1,3 @@
+# The cloud provider to use. Leave this emtpy to skip the corresponding
+# Kubelet parameter completely
+cloud_provider:
