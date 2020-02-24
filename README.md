@@ -120,8 +120,8 @@ This installation requires several binaries for the Kubernetes components and th
 
 TBD: 
 
-* should probably adapt etcd systemd unit file to restart on exit
-* why are pods not rescheduled when we delete a node? Usually it should take 40 seconds until the node is marked as notReady and then up to 5 minutes until the evicition is done - check
+* run lb_port_update.sh during restart
+* add router ID  to OpenStack cloud provider configuration file
+* why are pods not rescheduled when we delete a node? Usually it should take 40 seconds until the node is marked as notReady and then up to 5 minutes until the eviction is done - check
 * fix deprecation message when using include in Ansible playbook
-* provide restart script cluster. At least, we need to recreate kubeconfig (contains network node IP) and restart etcd (hangs sometimes)
 
