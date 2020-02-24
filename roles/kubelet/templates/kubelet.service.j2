@@ -9,6 +9,9 @@ ExecStart=/usr/local/bin/kubelet \
   --bootstrap-kubeconfig=/etc/kubernetes/pki/bootstrap-kubeconfig  \
   --node-ip={{node_ip}} \
   --network-plugin=cni
+{% if cloud_provider is not none %}
+  --cloud-provider="{{cloud_provider}}"
+{% endif %}
 Restart=always
 StartLimitInterval=0
 RestartSec=10
