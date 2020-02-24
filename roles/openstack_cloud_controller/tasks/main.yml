@@ -1,0 +1,8 @@
+---
+#
+# First we prepare the manifest file for the cloud controller
+#
+- name: Prepare manifest file
+  template:
+    src: os_cloud_controller.yaml.j2
+    dest: "{{state_dir}}/config/os_cloud_controller.yaml"

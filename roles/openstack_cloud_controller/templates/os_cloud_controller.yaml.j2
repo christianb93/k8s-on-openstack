@@ -1,0 +1,231 @@
+#
+# This is the service account that we use to run the controller manager
+#
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloud-controller-manager
+  namespace: kube-system
+---
+#
+# We also need an additional role (see https://github.com/kubernetes/cloud-provider-openstack/tree/master/cluster/addons/rbac ) to which we bind our service account 
+#
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:cloud-controller-manager
+rules:
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - create
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - list
+  - get
+  - watch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: system:os-cloud-controller
+subjects:
+  - kind: ServiceAccount
+    name: cloud-controller-manager
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: system:cloud-controller-manager
+  apiGroup: rbac.authorization.k8s.io
+---
+#
+# This secret holds the CA certificate of the OpenStack API endpoint, which the cloud provider
+# will use to verify a TLS server certificate presented by the OpenStack endpoint
+#
+kind: Secret
+apiVersion: v1
+metadata:
+  name: os-client-ca
+  namespace: kube-system
+type: Opaque  
+data: 
+  os_ca.crt: {{os_ca_cert_data | b64encode}}
+
+---
+# 
+# This secret holds the configuration of the cloud provider
+#
+kind: Secret
+apiVersion: v1
+metadata:
+  name: os-cloud-config
+  namespace: kube-system
+type: Opaque  
+stringData: 
+  cloud.conf: |
+    [Global]
+    auth-url=https://{{os.install_node.ip}}:5000/v3
+    username={{os.auth.username}}
+    password={{os.auth.password}}
+    tenant-name={{os.auth.os_project_name}}
+    ca-file=/etc/os_credentials/os_ca.crt
+    region={{os.region_name}}
+    domain-name=default
+
+    [LoadBalancer]
+    use-octavia=true 
+
+---
+#
+# A config map which contains a kubeconfig file to be used by the cloud provider. Note that this
+# references the credentials mapped into our container by Kubernetes due to the service account binding 
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: os-cloud-controller-config
+  namespace: kube-system
+data:
+  kubeconfig: |
+    apiVersion: v1
+    clusters:
+    - cluster:
+        certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        server: "{{cluster_endpoint}}"
+      name: {{cluster_name}}
+    contexts:
+    - context:
+        cluster: {{cluster_name}}
+        user: default
+      name: {{cluster_name}}-context
+    current-context: {{cluster_name}}-context
+    kind: Config
+    preferences: {}
+    users:
+    - name: default
+      user:
+        tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token  
+---
+#
+# The actual pod
+#
+apiVersion: v1
+kind: Pod
+metadata:
+  name: openstack-cloud-controller-manager
+  namespace: kube-system
+spec:
+  containers:
+    - name: openstack-cloud-controller-manager
+      image: docker.io/k8scloudprovider/openstack-cloud-controller-manager:v1.17.0
+      #image: busybox:latest
+      command:
+        # - sleep
+        # - "3600"
+        - /bin/openstack-cloud-controller-manager
+        #- --v=6
+        - --cloud-config=/etc/os_cloud_provider/cloud.conf
+        - --cloud-provider=openstack
+        - --use-service-account-credentials=true
+        - --kubeconfig=/etc/kubernetes/conf/kubeconfig
+        - --authentication-kubeconfig=/etc/kubernetes/conf/kubeconfig
+        - --authentication-kubeconfig=/etc/kubernetes/conf/kubeconfig
+      volumeMounts:
+        - mountPath: /etc/os_cloud_provider
+          name: cloud-config-volume
+          readOnly: true
+        - mountPath: /etc/os_credentials
+          name: os-ca-credentials
+          readOnly: true
+        - mountPath: /etc/kubernetes/conf
+          name: kube-conf
+          readOnly: true
+      resources:
+        requests:
+          cpu: 200m
+  hostNetwork: true
+  tolerations:
+    - key: node.cloudprovider.kubernetes.io/uninitialized
+      value: "true"
+      effect: NoSchedule
+    - key: node.kubernetes.io/not-ready
+      effect: NoSchedule
+  serviceAccountName: cloud-controller-manager
+  volumes:
+  - name: cloud-config-volume
+    secret:
+      secretName: os-cloud-config
+  - name: kube-conf
+    configMap:
+      name: os-cloud-controller-config
+  - name: os-ca-credentials
+    secret:
+      secretName: os-client-ca
