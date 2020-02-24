@@ -120,8 +120,5 @@ This installation requires several binaries for the Kubernetes components and th
 
 TBD: 
 
-* run lb_port_update.sh during restart
-* add router ID  to OpenStack cloud provider configuration file
-* why are pods not rescheduled when we delete a node? Usually it should take 40 seconds until the node is marked as notReady and then up to 5 minutes until the eviction is done - check
 * fix deprecation message when using include in Ansible playbook
-
+* when we restart, our script to update the tagging of the lb_port might fail if the OS API is not yet reachable
