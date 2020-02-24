@@ -44,3 +44,8 @@ install_nodes:
             ansible_python_interpreter: /usr/bin/python3
             ansible_ssh_private_key_file: {{os.install_node.ssh_key}}
             ansible_ssh_user: {{os.install_node.user}}
+
+all:
+    hosts:
+    vars:
+        os_router_id: {{os_router_output.id}}

@@ -48,6 +48,7 @@
       "{{k8s_node_network.subnet_name}}"
     name: "{{k8s_node_network.router_name}}"
     network: "{{os.network.external_network_name}}"
+  register: os_router_output
 
 - name: Allow ICMP traffic for default security group 
   os_security_group_rule:

@@ -144,6 +144,9 @@ stringData:
     use-octavia=true 
     manage-security-groups=true
 
+    [Route]
+    router-id={{hostvars.install_node.os_router_id}}
+
 ---
 #
 # A config map which contains a kubeconfig file to be used by the cloud provider. Note that this
