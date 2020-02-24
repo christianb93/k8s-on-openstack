@@ -32,4 +32,9 @@ cluster_dns: 10.2.0.10
 # External DNS server to use for requests
 # which cannot be resolved by the in-cluster DNS
 #
-external_dns_server: 1.1.1.1
+external_dns_server: 8.8.8.8
+#
+# The cloud provider to use for the kubelet
+# Use external if you want to install an out-of-tree cloud provider
+#
+cloud_provider: external
