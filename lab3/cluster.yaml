@@ -155,3 +155,20 @@
   roles:
     - openstack_cloud_controller
     
+- name: Install kubeproxy and Flannel as DaemonSet
+  hosts: localhost
+  become: no 
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+  roles:
+    - kube_proxy
+    - flannel
+
+- name: Install CoreDNS 
+  hosts: localhost
+  become: no
+  vars_files:
+    "{{playbook_dir}}/group_vars/all.yml"
+  roles:
+    - core_dns
+        
