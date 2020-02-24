@@ -1,6 +1,7 @@
 Testing our installation
 ============================
 
+
 In this document, we collect a few tests that can be run after the installation has finished to verify proper operations. First, of course, we want to make sure that we can connect to the OpenStack API and the Kubernetes API. To do this, enter
 
 ```
@@ -80,5 +81,71 @@ kubectl exec ${pods[0]} -- /bin/sh -c "apt-get -y update && apt-get -y install c
 kubectl exec ${pods[0]} -- /bin/sh -c "curl nginx-service"
 ```
 
+# Testing the OpenStack cloud provider
+
+First, let us check the information that the cloud controller will add to a node. Specifically, let us look for the following information:
+
+* the provider ID of the node that the controller will add to the spec
+* the IP addresses of the node which will be added to the status section
+* the instance type which will be added as label *beta.kubernetes.io/instance-type*
+* the failure domain (label *failure-domain.beta.kubernetes.io/zone*)
+* the region (label *failure-domain.beta.kubernetes.io/region*)
 
 
+```
+kubectl get node worker1 -o json | jq -r ".spec.providerID"
+kubectl get node worker1 -o json | jq -r ".status.addresses"
+kubectl get node worker1 -o json | jq -r ".metadata.labels[\"beta.kubernetes.io/instance-type\"]"
+kubectl get node worker1 -o json | jq -r ".metadata.labels[\"failure-domain.beta.kubernetes.io/zone\"]"
+kubectl get node worker1 -o json | jq -r ".metadata.labels[\"failure-domain.beta.kubernetes.io/region\"]"
+```
+If you compare the output of these commands to the output of 
+
+``` 
+openstack server show worker1 -f value -c id -c addresses worker1
+openstack flavor show -f value -c id m1.medium
+```
+
+you should see that
+
+* the providerID is the string "openstack:///" plus the UUID of the node in Openstack
+* the instance type is the UUID of the flavor used for the node
+* the addresses are the OpenStack node addresses, including the floating IP address
+
+Now it is time to try out the load balancer integration. For that purpose, use the following command to spawn a service with two NGINX instances behind it.
+
+```
+kubectl apply -f tests/test2.yaml
+```
+
+Now run repeatedly
+
+```
+openstack loadbalancer list
+kubectl get service nginx-loadbalancer-service
+```
+After typically a bit less than a minute, the load balancer should be displayed in the ACTIVE state, and an external IP should appear on the service. When you run
+
+```
+openstack floating ip list
+```
+
+and compare the output to the data displayed about the loadbalancer, you should see that the IP displayed as external service IP is the floating IP (on the external network, i.e. in the range 172.16.0.0/24) associated with the VIP (on the internal network, i.e. in the range 172.18.0.0/24)
+
+Of course this IP is not reachable from our lab host, but from the network host. One way to test this is therefore to execute a curl on the network host via SSH.
+
+```
+vip=$(kubectl get service nginx-loadbalancer-service \
+   -o json \
+    | jq -r \
+    ".status.loadBalancer.ingress[0].ip")
+ssh network "curl $vip"
+```    
+
+You should now see the HTML source code of a typical NGINX welcome page. Alternatively, you can set up an SSH port forward
+
+```
+ssh -L 8888:$vip:80 -N network
+```
+
+and then point your browser to 127.0.0.1:8888 to see this page. Finally, you can delete the service again and should see the load balancer disappear.
