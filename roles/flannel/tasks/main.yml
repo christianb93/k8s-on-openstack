@@ -2,6 +2,19 @@
   template:
     src: kube_flannel.yaml.j2
     dest: "{{state_dir}}/config/kube_flannel.yaml"
+
+- name: For host-gw backend, add allowed address pairs
+  delegate_to: install_node
+  os_port:
+    auth: "{{os.auth}}"      
+    auth_type: password
+    name: "{{item}}-port"
+    state: present
+    allowed_address_pairs:
+      - ip_address: "{{cluster_cidr}}"
+  loop: "{{groups['worker_nodes']}}"
+  when: flannel_backend == "host-gw"
+
 - name: Apply Flannel manifest file
   shell: 
     kubectl --kubeconfig {{state_dir}}/config/admin-kubeconfig apply -f {{state_dir}}/config/kube_flannel.yaml
