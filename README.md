@@ -15,7 +15,10 @@ This repository contains the following directories:
 * os - here we place the Ansible scripts to install OpenStack - taken from my blog [leftasexercise.com](https://leftasexercise.com/2020/01/20/q-running-your-own-cloud-with-openstack-overview/). This script also creates an external network and a m1.nano flavors for later tests
 * nodes - this directory contains scripts needed to bring up our OpenStack nodes on which we will then install Kubernetes
 * cluster - the final scripts for the Kubernetes cluster
-* labXXX - one directory for each lab
+* Lab1 - install the Kubernetes control plane
+* Lab2 - install the worker nodes and add-ons
+* Lab3 - install the OpenStack cloud controller manager
+* Lab4 - use Flannel with the host-gw backend
 
 The labs are structured as follows:
 
@@ -103,6 +106,9 @@ for fip in $fips; do
 done
 openstack router remove subnet k8s-router k8s-node-subnet
 openstack router delete k8s-router
+for port in worker1-port worker2-port; do
+  openstack port delete $port;
+done
 openstack network delete k8s-node-network
 ```
 
