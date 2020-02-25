@@ -38,3 +38,7 @@ external_dns_server: 8.8.8.8
 # Use external if you want to install an out-of-tree cloud provider
 #
 cloud_provider: external
+#
+# The Flannel backend that we use. We support host-gw and vxlan
+#
+flannel_backend: host-gw
