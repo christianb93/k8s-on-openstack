@@ -1,0 +1,3 @@
+---
+# The flannel backend to use - vxlan or host-hw
+flannel_backend: vxlan

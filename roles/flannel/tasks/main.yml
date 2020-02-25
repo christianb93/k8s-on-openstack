@@ -2,6 +2,6 @@
   template:
     src: kube_flannel.yaml.j2
     dest: "{{state_dir}}/config/kube_flannel.yaml"
-- name: Run kube-proxy
+- name: Apply Flannel manifest file
   shell: 
     kubectl --kubeconfig {{state_dir}}/config/admin-kubeconfig apply -f {{state_dir}}/config/kube_flannel.yaml
