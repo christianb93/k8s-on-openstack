@@ -100,6 +100,22 @@
     - master
   register: master_nodes
 
+- name: Create Neutron ports for worker nodes
+  os_port:
+    auth: "{{os.auth}}"      
+    auth_type: password
+    name: "{{item}}-port"
+    state: present
+    network: "{{k8s_node_network.network_name}}"
+    port_security_enabled: yes
+    security_groups:
+      - "default"
+  loop:
+    - worker1
+    - worker2
+  register:
+    worker_node_ports
+
 - name: Create worker nodes
   os_server:
     auth: "{{os.auth}}"      
@@ -110,7 +126,7 @@
     image: "{{os.machine_templates.worker_nodes.image}}"
     key_name: "os-default-key"
     nics:
-      - net-name: "{{k8s_node_network.network_name}}"
+      - port-name: "{{item}}-port"
     security_groups:
       - "default"
   loop:

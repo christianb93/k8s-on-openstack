@@ -4,9 +4,12 @@ worker_nodes:
 {%  for node in worker_nodes.results %}
 {%      set floating_ip =  ( floating_ips.results | selectattr("item", "equalto", node.server.name) | map(attribute='floating_ip') | list )[0].floating_ip_address  %}
 {%      set node_ip = ( node.server.addresses[k8s_node_network.network_name] | selectattr("OS-EXT-IPS:type", "equalto", "fixed") | map(attribute='addr') | list)[0]  %}
-        {{node.server.name}}:
+{%      set port_id = ( worker_node_ports.results | map(attribute='port') | selectattr("name", "equalto", node.server.name+"-port") | map(attribute='id') | list)[0]   %}
+       {{node.server.name}}:
             ansible_ssh_host: {{ floating_ip }}
             node_ip: {{ node_ip }}
+            port_id: {{ port_id }}
+            port_name: {{ node.server.name }}-port
             floating_ip: {{ floating_ip }}
             host_key_checking: false
             ansible_python_interpreter: /usr/bin/python3
