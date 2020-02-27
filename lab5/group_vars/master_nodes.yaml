@@ -1,0 +1,49 @@
+---
+# We use a separate CA for the etcd installation. These variables define the location 
+# of key and certificate
+etcd_ca_private_key: "{{state_dir}}/ca/etcd_ca.rsa"
+etcd_ca_cert: "{{state_dir}}/ca/etcd_ca.crt"
+# The API server connects to the etcd using these credentials
+# These need to be certificates issued by the CA above
+apiserver_etcd_client_key: "{{state_dir}}/k8s_certs/apiserver_etcd_client.rsa"
+apiserver_etcd_client_cert: "{{state_dir}}/k8s_certs/apiserver_etcd_client.crt"
+# The TLS server key and server certificate, issues by the CA above as well
+etcd_server_cert: "{{state_dir}}/k8s_certs/etcd_server.crt"
+etcd_server_key: "{{state_dir}}/k8s_certs/etcd_server.rsa"
+# The TLS certificates and keys that the Kubernetes API server will present
+# when a client connects
+apiserver_cert: "{{state_dir}}/k8s_certs/apiserver.crt"
+apiserver_key: "{{state_dir}}/k8s_certs/apiserver.rsa"
+# The API server will need to talk to the kubelet, for instance
+# when running kubectl exec. This is the key and certificate that
+# it will use for that purpose
+apiserver_kubelet_client_cert: "{{state_dir}}/k8s_certs/apiserver_kubelet_client.crt" 
+apiserver_kubelet_client_key: "{{state_dir}}/k8s_certs/apiserver_kubelet_client.rsa"
+# The Kubernetes controller will issue service account token that the Kubernetes API 
+# server needs to validate. This is the public key used to do this
+sa_key: "{{state_dir}}/k8s_certs/sa.rsa"
+# To delegate to downstream API extension servers, the Kubernetes API server needs a 
+# certificate that it will use as a client CA certificate, i.e. to verify TLS
+# certificates presented by a downstream server
+front_proxy_ca_cert: "{{state_dir}}/ca/proxy_ca.crt"
+# and these are certificate and key that the API server will use as client certificate
+# when connecting to an extension API server
+front_proxy_client_cert: "{{state_dir}}/k8s_certs/front_proxy_client.crt"
+front_proxy_client_key: "{{state_dir}}/k8s_certs/front_proxy_client.rsa"
+# The key and certificate that the Kubernetes controller manager will use
+# as server certificate and key
+controller_manager_cert: "{{state_dir}}/k8s_certs/controller_manager.crt"
+controller_manager_key: "{{state_dir}}/k8s_certs/controller_manager.rsa"
+# The kubeconfig file that the Kubernetes controller manager will use
+# to connect to the API server
+controller_manager_kubeconfig: "{{state_dir}}/config/controller-manager-kubeconfig"
+# For the CSR signing functionality, the kube controller manager will need access to the
+# RSA key of the root CA certificate
+root_ca_key: "{{state_dir}}/ca/k8s_ca.rsa"
+# The key and certificate that the Kubernetes scheduler will use
+# as server certificate and key
+scheduler_cert: "{{state_dir}}/k8s_certs/scheduler.crt"
+scheduler_key: "{{state_dir}}/k8s_certs/scheduler.rsa"
+# The kubeconfig file that the Kubernetes scheduler will use
+# to connect to the API server
+scheduler_kubeconfig: "{{state_dir}}/config/scheduler-kubeconfig"

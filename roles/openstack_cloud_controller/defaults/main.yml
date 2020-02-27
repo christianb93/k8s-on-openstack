@@ -1,0 +1,3 @@
+# Should the OpenStack cloud controller create and maintain routes
+# for the allocated pod CIDRs for each node
+maintain_routes: false

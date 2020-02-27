@@ -199,6 +199,11 @@ spec:
         - --cloud-config=/etc/os_cloud_provider/cloud.conf
         - --cloud-provider=openstack
         - --use-service-account-credentials=true
+{% if maintain_routes %}
+        - --allocate-node-cidrs=true
+        - --configure-cloud-routes=true
+        - --cluster-cidr={{cluster_cidr}}
+{% endif %}
         - --kubeconfig=/etc/kubernetes/conf/kubeconfig
         - --authentication-kubeconfig=/etc/kubernetes/conf/kubeconfig
         - --authentication-kubeconfig=/etc/kubernetes/conf/kubeconfig

@@ -39,6 +39,6 @@ external_dns_server: 8.8.8.8
 #
 cloud_provider: external
 #
-# The Flannel backend that we use. 
+# The Flannel backend that we use
 #
-flannel_backend: host-gw
+flannel_backend: alloc
