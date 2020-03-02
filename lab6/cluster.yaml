@@ -157,4 +157,11 @@
   roles:
     - openstack_cloud_controller
     
+- name: Install Kuryr 
+  hosts: localhost
+  become: no
+  vars: 
+    state_dir: "{{playbook_dir}}/../.state"
+  roles:
+    - kuryr
 

@@ -121,6 +121,20 @@
     user: k8s
     role: member
     state: present
+- name: Assign admin role to Kubernetes user (as a workaround for Kuryr)
+  os_user_role:
+    auth:
+      auth_url: http://controller:5000/v3
+      username: admin
+      os_user_domain_name: "default"
+      os_project_domain_name: "default"
+      os_project_name: "admin"
+      password: "{{OS_ADMIN_PASSWORD}}"
+    auth_type: password
+    project: k8s
+    user: k8s
+    role: admin
+    state: present
 - name: Create load-balancer_admin role 
   os_keystone_role: 
     auth:

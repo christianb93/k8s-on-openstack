@@ -16,6 +16,8 @@ docker push christianb93/kuryr:stein
 
 The image created this way is a bit more than 300 MB in size. This could probably optimized further (the image does, for instance, contain GCC which is required at build time, and a multi-stage build could be used to reduce this). However, we can use the same image for the controller, the daemon and the CNI plugin, so that we only have to download one image per node.
 
+Note that [this issue](https://github.com/eventlet/eventlet/issues/526) currently implies that we cannot use any version of Python3 newer than 3.6 to run the controller.
+
 ## Installation
 
 The Kuryr controller will run as a pod. The following points need to be taken into account when preparings the manifest file.
@@ -27,6 +29,7 @@ The Kuryr controller will run as a pod. The following points need to be taken in
 
 TBD: turn of DHCP in pod and service subnet
 TBD: security group rules to allow traffic to pods and API endpoint from service network?
+TBD: we have turned k8s user into an admin user - is that really needed?
 
 
 The following variables need to be defined:
@@ -39,7 +42,11 @@ The following variables need to be defined:
 * k8s_project_id - ID of OpenStack project in which we create resources
 * kuryr_service_subnet_id - ID of service subnet
 * kuryr_pod_subnet_id - ID of pod subnet
-* node_network_id - ID of the network to which the nodes are attached
+* node_subnet_id - ID of the subnet to which the nodes are attached
+
+For the following variables, defaults are defined:
+
+* kuryr_image: docker image to use
 
 ## Dependencies
 

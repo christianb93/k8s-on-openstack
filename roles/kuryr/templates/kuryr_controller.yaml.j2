@@ -73,7 +73,7 @@ stringData:
     password={{os.auth.password}}
     project_name={{os.auth.os_project_name}}
     project_domain_name=default
-    ca_file=/etc/os_credentials/os_ca.crt
+    cafile=/etc/os_credentials/os_ca.crt
     region={{os.region_name}}
 
     [neutron_defaults]
@@ -85,18 +85,67 @@ stringData:
     ovs_bridge=br-int 
 
     [pod_vif_nested]
-    worker_nodes_subnet={{node_network_id}}
+    worker_nodes_subnet={{node_subnet_id}}
 
     [kubernetes]
     api_root=https://{{os.install_node.ip}}:6443
     pod_vif_driver=nested-macvlan
+    enabled_handlers=vif
+    token_file=/var/run/secrets/kubernetes.io/serviceaccount/token 
+    ssl_ca_crt_file=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt 
 
     [cni_daemon]
     docker_mode=true
     netns_proc_dir=/host_proc 
 
     
-    [Route]
-    router-id={{hostvars.install_node.os_router_id}}
+--- 
+#
+# The actual pod
+#
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kuryr-controller
+  namespace: kube-system
+spec:
+  containers:
+    - name: kuryr-controller
+      image: {{kuryr_image}}
+      command:
+        # - sleep
+        # - "3600"
+        - /usr/local/bin/kuryr-k8s-controller
+        - --config-file=/etc/kuryr/kuryr.conf
+      volumeMounts:
+        - mountPath: /etc/kuryr
+          name: kuryr-config-volume
+          readOnly: true
+        - mountPath: /etc/os_credentials
+          name: os-ca-credentials
+          readOnly: true
+        - mountPath: /host_proc 
+          name: host-proc 
+      resources:
+        requests:
+          cpu: 200m
+  hostNetwork: true
+  tolerations:
+    - key: node.cloudprovider.kubernetes.io/uninitialized
+      value: "true"
+      effect: NoSchedule
+    - key: node.kubernetes.io/not-ready
+      effect: NoSchedule
+  serviceAccountName: kuryr-controller
+  volumes:
+  - name: kuryr-config-volume
+    secret:
+      secretName: kuryr-config
+  - name: os-ca-credentials
+    secret:
+      secretName: os-client-ca
+  - name: host-proc 
+    hostPath:
+      path: /proc
 
 
