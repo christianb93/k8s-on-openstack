@@ -24,7 +24,10 @@
     state: present
   loop:
     - "{{k8s_node_network}}"
+  register:
+    node_network 
 
+    
 - name: If needed, create additional networks for Kuryr
   os_network:
     auth: "{{os.auth}}"
