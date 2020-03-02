@@ -204,6 +204,9 @@ spec:
         - --configure-cloud-routes=true
         - --cluster-cidr={{cluster_cidr}}
 {% endif %}
+{% if disable_service_controller %}
+        - --controllers=-service,route,cloud-node,cloud-node-lifecycle
+{% endif %}
         - --kubeconfig=/etc/kubernetes/conf/kubeconfig
         - --authentication-kubeconfig=/etc/kubernetes/conf/kubeconfig
         - --authentication-kubeconfig=/etc/kubernetes/conf/kubeconfig

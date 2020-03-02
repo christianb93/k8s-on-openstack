@@ -1,3 +1,8 @@
 # Should the OpenStack cloud controller create and maintain routes
 # for the allocated pod CIDRs for each node
 maintain_routes: false
+#
+# Disable service controller - set this to true to avoid conflicts
+# with Kuryr
+#
+disable_service_controller: false
