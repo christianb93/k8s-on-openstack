@@ -52,3 +52,9 @@ all:
     hosts:
     vars:
         os_router_id: {{os_router_output.id}}
+{% if create_kuryr_networks %}
+{%    set kuryr_pod_subnet_id = ( kuryr_networks_output.results | map(attribute='subnet') | selectattr("name", "equalto", "kuryr-pod-subnet") | map(attribute='id') | list)[0]  %}
+{%    set kuryr_service_subnet_id = ( kuryr_networks_output.results | map(attribute='subnet') | selectattr("name", "equalto", "kuryr-service-subnet") | map(attribute='id') | list)[0]  %}
+        kuryr_pod_subnet_id: {{kuryr_pod_subnet_id}}
+        kuryr_service_subnet_id: {{kuryr_service_subnet_id}}
+{% endif %}

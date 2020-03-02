@@ -24,6 +24,8 @@ The labs are structured as follows:
 * Lab3 - install the OpenStack cloud controller manager
 * Lab4 - use Flannel with the host-gw backend
 * Lab5 - leverage the OpenStack router to build a network solution
+* Lab6 - play with the Kuryr networking solution
+
 
 
 # Sizing of the environment

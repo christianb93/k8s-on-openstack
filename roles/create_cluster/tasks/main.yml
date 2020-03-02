@@ -25,6 +25,20 @@
   loop:
     - "{{k8s_node_network}}"
 
+- name: If needed, create additional networks for Kuryr
+  os_network:
+    auth: "{{os.auth}}"
+    auth_type: password
+    external: no
+    name: "{{item.network_name}}"
+    shared: false
+    state: present
+  loop:
+    - "{{kuryr_pod_network}}"
+    - "{{kuryr_service_network}}"
+  when: 
+    create_kuryr_networks 
+
 - name: Create subnets
   os_subnet:
     auth: "{{os.auth}}"
@@ -40,15 +54,55 @@
   loop:
     - "{{k8s_node_network}}"
 
+- name: Create additional subnets for Kuryr when needed
+  os_subnet:
+    auth: "{{os.auth}}"
+    auth_type: password
+    enable_dhcp: yes
+    gateway_ip: "{{item.gateway_ip}}"
+    cidr: "{{item.cidr}}"
+    network_name: "{{item.network_name}}"
+    name: "{{item.subnet_name}}"
+    state: present
+    allocation_pool_start: "{{item.pool_start}}"
+    allocation_pool_end:  "{{item.pool_end}}"
+  loop:
+    - "{{kuryr_pod_network}}"
+    - "{{kuryr_service_network}}"
+  when: 
+    create_kuryr_networks 
+  register: 
+    kuryr_networks_output
+
+- debug:
+    var: kuryr_networks_output
+
 - name: Create router 
   os_router:
     auth: "{{os.auth}}"
     auth_type: password
     interfaces:
-      "{{k8s_node_network.subnet_name}}"
+      - "{{k8s_node_network.subnet_name}}"
     name: "{{k8s_node_network.router_name}}"
     network: "{{os.network.external_network_name}}"
   register: os_router_output
+  when: 
+    not create_kuryr_networks 
+
+- name: Create router (with additional Kuryr networks)
+  os_router:
+    auth: "{{os.auth}}"
+    auth_type: password
+    interfaces:
+      - "{{k8s_node_network.subnet_name}}"
+      - "{{kuryr_pod_network.subnet_name}}"
+      - "{{kuryr_service_network.subnet_name}}"
+    name: "{{k8s_node_network.router_name}}"
+    network: "{{os.network.external_network_name}}"
+  register: os_router_output
+  when: 
+    create_kuryr_networks 
+
 
 - name: Allow ICMP traffic for default security group 
   os_security_group_rule:
@@ -65,8 +119,8 @@
     auth_type: password
     direction: ingress
     protocol: tcp
-    port_range_max: 22
-    port_range_min: 22
+    port_range_max: "22"
+    port_range_min: "22"
     remote_ip_prefix: "0.0.0.0/0"
     security_group: default
     state: present        
@@ -76,8 +130,8 @@
     auth_type: password
     direction: ingress
     protocol: tcp
-    port_range_max: 6443
-    port_range_min: 6443
+    port_range_max: "6443"
+    port_range_min: "6443"
     remote_ip_prefix: "0.0.0.0/0"
     security_group: default
     state: present        

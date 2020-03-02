@@ -1,0 +1,4 @@
+#
+# Create additional virtual networks for Kuryr
+#
+create_kuryr_networks: false

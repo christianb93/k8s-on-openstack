@@ -17,3 +17,31 @@ k8s_node_network:
   pool_end: "172.18.0.100"
   router_name: "k8s-router"
 
+#
+# This is the network configuration that we use for additional Kuryr networks (if that is
+# requested by settinc create_kuryr_networks). Please make sure that this configuration is aligned with
+# the pod CIDR and service CIDR configuration in cluster/groups_vars/all.yml
+
+kuryr_pod_network:
+  network_name: "kuryr-pod-network"
+  subnet_name: "kuryr-pod-subnet"
+  cidr: "10.1.0.0/24"
+  gateway_ip: "10.1.0.1"
+  pool_start: "10.1.0.2"
+  pool_end: "10.1.0.253"
+  router_name: "k8s-router"
+
+
+# Note that for the service network, we give Kuryr a network range which contains the service CIDR specified
+# above as lower half, but use a subnet from the upper half, so that the lower half is managed
+# by Kubernetes and the upper half is managed by Kuryr
+#
+kuryr_service_network:
+  network_name: "kuryr-service-network"
+  subnet_name: "kuryr-service-subnet"
+  cidr: "10.2.0.0/24"
+  gateway_ip: "10.2.0.254"
+  pool_start: "10.2.0.128"
+  pool_end: "10.2.0.253"
+  router_name: "k8s-router"
+
