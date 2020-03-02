@@ -54,7 +54,7 @@ all:
         os_router_id: {{os_router_output.id}}
         k8s_project_id: {{master_nodes.results[0].server.location.project.id}}
         external_network_id: {{os_router_output.router.external_gateway_info.network_id}}
-        node_network_id: {{node_network.results[0].network.id}}
+        node_subnet_id: {{node_subnet.results[0].subnet.id}}
 {% if create_kuryr_networks %}
 {%    set kuryr_pod_subnet_id = ( kuryr_networks_output.results | map(attribute='subnet') | selectattr("name", "equalto", "kuryr-pod-subnet") | map(attribute='id') | list)[0]  %}
 {%    set kuryr_service_subnet_id = ( kuryr_networks_output.results | map(attribute='subnet') | selectattr("name", "equalto", "kuryr-service-subnet") | map(attribute='id') | list)[0]  %}

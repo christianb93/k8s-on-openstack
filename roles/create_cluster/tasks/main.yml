@@ -56,6 +56,8 @@
     allocation_pool_end:  "{{item.pool_end}}"
   loop:
     - "{{k8s_node_network}}"
+  register:
+    node_subnet
 
 - name: Create additional subnets for Kuryr when needed
   os_subnet:
