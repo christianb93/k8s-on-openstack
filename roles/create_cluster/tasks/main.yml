@@ -74,9 +74,6 @@
   register: 
     kuryr_networks_output
 
-- debug:
-    var: kuryr_networks_output
-
 - name: Create router 
   os_router:
     auth: "{{os.auth}}"
@@ -188,6 +185,18 @@
     - worker2
   register: worker_nodes
 
+- name: Create pod security group if Kuryr networks are requested
+  os_security_group:
+    auth: "{{os.auth}}"      
+    auth_type: password
+    name: "pod_security_group"    
+    state: present
+  when: 
+    create_kuryr_networks
+  register:
+    pod_security_group
+
+
 - name: Associate floating IP addresses
   os_floating_ip:
     auth: "{{os.auth}}"      
@@ -214,3 +223,4 @@
     flat: "yes"
     src: "/home/{{os.install_node.user}}/cluster.yaml"
     dest: "{{state_dir}}/config/cluster.yaml"
+
