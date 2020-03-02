@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kuryr-controller
+  namespace: kube-system
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kuryr-controller
+rules:
+- apiGroups:
+  - ""
+  verbs: ["*"]
+  resources:
+    - endpoints
+    - pods
+    - nodes
+    - services
+    - services/status
+    - namespaces
+- apiGroups:
+    - openstack.org
+  verbs: ["*"]
+  resources:
+    - kuryrnets
+    - kuryrnetpolicies
+    - kuryrloadbalancers
+- apiGroups: ["networking.k8s.io"]
+  resources:
+  - networkpolicies
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+- apiGroups: ["k8s.cni.cncf.io"]
+  resources:
+  - network-attachment-definitions
+  verbs:
+  - get
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kuryr-controller-global
+subjects:
+- kind: ServiceAccount
+  name: kuryr-controller
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: kuryr-controller
+  apiGroup: rbac.authorization.k8s.io
+---
+# 
+# This secret holds the configuration of the cloud provider
+#
+kind: Secret
+apiVersion: v1
+metadata:
+  name: kuryr-config
+  namespace: kube-system
+type: Opaque  
+stringData: 
+  kuryr.conf: |
+    [neutron]
+    auth_url=https://{{os.install_node.ip}}:5000/v3
+    auth_type=password
+    username={{os.auth.username}}
+    user_domain_name=default
+    password={{os.auth.password}}
+    project_name={{os.auth.os_project_name}}
+    project_domain_name=default
+    ca_file=/etc/os_credentials/os_ca.crt
+    region={{os.region_name}}
+
+    [neutron_defaults]
+    pod_security_groups={{pod_security_group_id}}
+    external_svc_net={{external_network_id}}
+    project={{k8s_project_id}}
+    service_subnet={{kuryr_service_subnet_id}}
+    pod_subnet={{kuryr_pod_subnet_id}}
+    ovs_bridge=br-int 
+
+    [pod_vif_nested]
+    worker_nodes_subnet={{node_network_id}}
+
+    [kubernetes]
+    api_root=https://{{os.install_node.ip}}:6443
+    pod_vif_driver=nested-macvlan
+
+    [cni_daemon]
+    docker_mode=true
+    netns_proc_dir=/host_proc 
+
+    
+    [Route]
+    router-id={{hostvars.install_node.os_router_id}}
+
+

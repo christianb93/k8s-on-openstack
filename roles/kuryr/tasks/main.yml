@@ -1,0 +1,13 @@
+---
+#
+# Create manifest file
+#
+- name: Create manifest file controller
+  template:
+    src: kuryr_controller.yaml.j2
+    dest: "{{state_dir}}/config/kuryr_controller.yaml"
+
+- name: Apply manifest file for controller 
+  shell: 
+    kubectl apply --kubeconfig {{state_dir}}/config/admin-kubeconfig -f {{state_dir}}/config/kuryr_controller.yaml 
+
