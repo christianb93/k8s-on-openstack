@@ -65,6 +65,9 @@ metadata:
 type: Opaque  
 stringData: 
   kuryr.conf: |
+    [oslo_concurrency]
+    lock_path=/tmp 
+
     [neutron]
     auth_url=https://{{os.install_node.ip}}:5000/v3
     auth_type=password
@@ -87,6 +90,9 @@ stringData:
     [pod_vif_nested]
     worker_nodes_subnet={{node_subnet_id}}
 
+    [binding]
+    link_iface=ens3 
+    
     [kubernetes]
     api_root=https://{{os.install_node.ip}}:6443
     pod_vif_driver=nested-macvlan
@@ -97,7 +103,7 @@ stringData:
     [cni_daemon]
     docker_mode=true
     netns_proc_dir=/host_proc 
-
+    bind_address=127.0.0.1:5036
     
 --- 
 #

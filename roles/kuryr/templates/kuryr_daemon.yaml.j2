@@ -130,6 +130,9 @@ spec:
           resources:
             requests:
               cpu: 200m
+          securityContext:
+            privileged: true
+
       hostNetwork: true
       tolerations:
         - key: node.cloudprovider.kubernetes.io/uninitialized
