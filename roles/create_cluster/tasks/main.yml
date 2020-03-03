@@ -114,7 +114,14 @@
   when: 
     create_kuryr_networks 
 
-
+- name: Allow all traffic between nodes in the same security group
+  os_security_group_rule:
+    auth: "{{os.auth}}"
+    auth_type: password
+    direction: ingress
+    remote_group: node_security_group
+    security_group: node_security_group
+    state: present
 - name: Allow ICMP traffic for node security group 
   os_security_group_rule:
     auth: "{{os.auth}}"
@@ -193,8 +200,6 @@
     key_name: "os-default-key"
     nics:
       - port-name: "{{item}}-port"
-    security_groups:
-      - "default"
   loop:
     - worker1
     - worker2
