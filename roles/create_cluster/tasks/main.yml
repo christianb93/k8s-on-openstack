@@ -77,6 +77,7 @@
     network_name: "{{item.network_name}}"
     name: "{{item.subnet_name}}"
     state: present
+    enable_dhcp: "no"
     allocation_pool_start: "{{item.pool_start}}"
     allocation_pool_end:  "{{item.pool_end}}"
   loop:
