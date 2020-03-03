@@ -211,6 +211,17 @@
   register:
     pod_security_group
 
+- name: If Kuryr is used, allow traffic from the service network to the pod network
+  os_security_group_rule:
+    auth: "{{os.auth}}"
+    auth_type: password
+    direction: ingress
+    remote_ip_prefix: "{{kuryr_service_network.cidr}}"
+    security_group: "pod_security_group"    
+    state: present
+  when: 
+    create_kuryr_networks
+
 
 - name: Associate floating IP addresses
   os_floating_ip:
