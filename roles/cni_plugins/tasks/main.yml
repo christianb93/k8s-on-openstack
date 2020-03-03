@@ -16,4 +16,5 @@
     - portmap
     - bridge
     - host-local  
+    - kuryr_cni
     
