@@ -1,0 +1,161 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kuryr-daemon
+  namespace: kube-system
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kuryr-daemon
+rules:
+- apiGroups:
+  - ""
+  verbs: ["*"]
+  resources:
+    - endpoints
+    - pods
+    - nodes
+    - services
+    - services/status
+    - namespaces
+- apiGroups:
+    - openstack.org
+  verbs: ["*"]
+  resources:
+    - kuryrnets
+    - kuryrnetpolicies
+    - kuryrloadbalancers
+- apiGroups: ["networking.k8s.io"]
+  resources:
+  - networkpolicies
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+- apiGroups: ["k8s.cni.cncf.io"]
+  resources:
+  - network-attachment-definitions
+  verbs:
+  - get
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kuryr-daemon-global
+subjects:
+- kind: ServiceAccount
+  name: kuryr-daemon
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: kuryr-daemon
+  apiGroup: rbac.authorization.k8s.io
+---
+#
+# A config map which contains the CNI network configuration
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kuryr-cni-config
+  namespace: kube-system
+data:
+  10-kuryr.conf: |
+    {
+      "cniVersion": "0.3.1",
+      "name": "kuryr",
+      "type": "kuryr_cni",
+      "kuryr_conf": "/etc/kuryr/kuryr.conf",
+      "debug": true
+    }
+
+---
+#
+# The actual Daemon set
+#
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    k8s-app: kuryr-daemon
+  name: kuryr-daemon
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kuryr-daemon
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 10%
+  template:
+    metadata:
+      name: kuryr-daemon
+      namespace: kube-system
+      labels:
+        k8s-app: kuryr-daemon
+    spec:
+      initContainers:
+        - name: cni-init
+          image: busybox:1.28
+          command:  ['sh', '-c', 'mkdir -p /host_etc/cni/net.d ; cp /etc/cni/10-kuryr.conf /host_etc/cni/net.d/10-kuryr.conf ; mkdir -p /host_etc/kuryr ; cp /etc/kuryr/kuryr.conf /host_etc/kuryr/kuryr.conf']
+          volumeMounts:
+            - mountPath: /etc/cni
+              name: kuryr-cni-config
+            - mountPath: /host_etc
+              name: host-etc
+            - mountPath: /etc/kuryr
+              name: kuryr-config-volume
+              readOnly: true
+      containers:
+        - name: kuryr-daemon
+          image: {{kuryr_image}}
+          command:
+            - /usr/local/bin/kuryr-daemon
+            - --config-file=/etc/kuryr/kuryr.conf
+          volumeMounts:
+            - mountPath: /etc/kuryr
+              name: kuryr-config-volume
+              readOnly: true
+            - mountPath: /etc/os_credentials
+              name: os-ca-credentials
+              readOnly: true
+            - mountPath: /etc/cni
+              name: kuryr-cni-config
+            - mountPath: /host_proc 
+              name: host-proc 
+          resources:
+            requests:
+              cpu: 200m
+      hostNetwork: true
+      tolerations:
+        - key: node.cloudprovider.kubernetes.io/uninitialized
+          value: "true"
+          effect: NoSchedule
+        - key: node.kubernetes.io/not-ready
+          effect: NoSchedule
+      serviceAccountName: kuryr-controller
+      volumes:
+      - name: kuryr-config-volume
+        secret:
+          secretName: kuryr-config
+      - name: os-ca-credentials
+        secret:
+          secretName: os-client-ca
+      - name: kuryr-cni-config
+        configMap:
+          name: kuryr-cni-config
+      - name: host-proc 
+        hostPath:
+          path: /proc
+      - name: host-opt
+        hostPath:
+          path: /opt/cni
+      - name: host-etc
+        hostPath:
+          path: /etc/
+
+
