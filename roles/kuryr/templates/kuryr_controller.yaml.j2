@@ -55,7 +55,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ---
 # 
-# This secret holds the configuration of the cloud provider
+# This secret holds the configuration of the Kuryr controller 
 #
 kind: Secret
 apiVersion: v1
@@ -124,8 +124,6 @@ spec:
         - mountPath: /etc/os_credentials
           name: os-ca-credentials
           readOnly: true
-        - mountPath: /host_proc 
-          name: host-proc 
       resources:
         requests:
           cpu: 200m
@@ -144,8 +142,5 @@ spec:
   - name: os-ca-credentials
     secret:
       secretName: os-client-ca
-  - name: host-proc 
-    hostPath:
-      path: /proc
 
 
