@@ -13,6 +13,14 @@
     state: present
     filename: "/home/{{os.install_node.user}}/base.img"
 
+- name: Create node security group
+  os_security_group:
+    auth: "{{os.auth}}"      
+    auth_type: password
+    name: "node_security_group"    
+    state: present
+  register:
+    node_security_group
 
 - name: Create networks
   os_network:
@@ -106,16 +114,16 @@
     create_kuryr_networks 
 
 
-- name: Allow ICMP traffic for default security group 
+- name: Allow ICMP traffic for node security group 
   os_security_group_rule:
     auth: "{{os.auth}}"
     auth_type: password
     direction: ingress
     protocol: icmp
     remote_ip_prefix: "0.0.0.0/0"
-    security_group: default
+    security_group: node_security_group
     state: present
-- name: Allow SSH traffic for default security group 
+- name: Allow SSH traffic for node security group 
   os_security_group_rule:
     auth: "{{os.auth}}"
     auth_type: password
@@ -124,7 +132,7 @@
     port_range_max: "22"
     port_range_min: "22"
     remote_ip_prefix: "0.0.0.0/0"
-    security_group: default
+    security_group: node_security_group
     state: present        
 - name: Allow access to the Kubernetes API server 
   os_security_group_rule:
@@ -135,7 +143,7 @@
     port_range_max: "6443"
     port_range_min: "6443"
     remote_ip_prefix: "0.0.0.0/0"
-    security_group: default
+    security_group: node_security_group
     state: present        
 
 
@@ -151,7 +159,7 @@
     nics:
       - net-name: "{{k8s_node_network.network_name}}"
     security_groups:
-      - "default"
+      - "node_security_group"
   loop:
     - master
   register: master_nodes
@@ -162,10 +170,11 @@
     auth_type: password
     name: "{{item}}-port"
     state: present
-    network: "{{k8s_node_network.network_name}}"
+    network: "{{node_network.results[0].network.id}}"
     port_security_enabled: yes
+    region_name: "{{os.region_name}}"
     security_groups:
-      - "default"
+      - "node_security_group"
   loop:
     - worker1
     - worker2
