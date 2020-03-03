@@ -200,6 +200,8 @@
     key_name: "os-default-key"
     nics:
       - port-name: "{{item}}-port"
+    security_groups: 
+      - "node_security_group"
   loop:
     - worker1
     - worker2
