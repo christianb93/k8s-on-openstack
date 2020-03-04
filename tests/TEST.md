@@ -149,3 +149,53 @@ ssh -L 8888:$vip:80 -N network
 ```
 
 and then point your browser to 127.0.0.1:8888 to see this page. Finally, you can delete the service again and should see the load balancer disappear.
+
+# Testing Kuryr
+
+Once the Kuryr controller and daemon are installed, we should see that all worker nodes move into the "Ready" status, indicating that the CNI configuration has successfully been validated by the Kubelet. To verify operations of the Kuryr controller and daemon, let us create a few pods to verify inter-pod connectivity.
+
+```
+kubectl apply -f tests/test3.yaml
+```
+
+Once the pods are running, we should see that the Kuryr controller has created additional ports - when we run
+
+```
+openstack port list
+```
+
+we should see two new ports with an IP address in the cluster CIDR range. We should also find annotations on the pod which refer to these two newly created pods. When we log into one of the pods, we should also be able to ping the other pods via their IP address.
+
+Let us now bring up an additional deployment with an associated service.
+
+```
+kubectl apply -f tests/test4.yaml
+```
+
+In addition, Kuryr will create a load balancer that should be visible in the output of `openstack loadbalancer list`. You should be able to verify that:
+
+* the VIP of the load balancer is in the first half of the service CIDR
+* the VRRP IP is in the second half of the CIDR range
+* the load balancer pool has two members, corresponding to the two pods 
+
+To see all this, use the following commands.
+
+```
+openstack loadbalancer show default/nginx-service
+# Wait until loadbalancer is ACTIVE, then enter the following commands
+pool=$(openstack loadbalancer show default/nginx-service -f value -c pools)
+lb=$(openstack loadbalancer show default/nginx-service -f value -c id)
+amphora=$(openstack loadbalancer amphora list --loadbalancer=$lb -f value -c id)
+openstack loadbalancer amphora show $amphora
+openstack loadbalancer member list $pool
+```
+
+We can now test our load balancers as follows:
+
+```
+pods=( $(kubectl get pods --no-headers --selector "app==buster" -o custom-columns=":metadata.name") )
+kubectl exec ${pods[0]} -- /bin/sh -c "curl nginx-service"
+```
+
+
+

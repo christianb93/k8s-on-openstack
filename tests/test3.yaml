@@ -2,37 +2,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-tolerations
+  name: buster
 spec:
   selector:
     matchLabels:
-      app: nginx-tolerations
+      app: buster
   replicas: 2
   template:
     metadata:
       labels:
-        app: nginx-tolerations
+        app: buster
     spec:
       containers:
-        - name: nginx
-          image: nginx:latest
-      tolerations:
-        - key: node.cloudprovider.kubernetes.io/uninitialized
-          value: "true"
-          effect: NoSchedule
-        - key: node.kubernetes.io/not-ready
-          effect: NoSchedule
-      
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nginx-loadbalancer-service
-spec:
-  selector:
-    app: nginx-loadbalancer
-  type: ClusterIP
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 80        
+        - name: buster
+          image: debian:buster
+          command: ['sh', '-c', 'sleep 60000']
