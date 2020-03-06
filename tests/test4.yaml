@@ -2,30 +2,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: kuryr-demo
 spec:
   selector:
     matchLabels:
-      app: nginx
-  replicas: 2
+      app: kuryr-demo
+  replicas: 4
   template:
     metadata:
       labels:
-        app: nginx
+        app: kuryr-demo
     spec:
       containers:
-        - name: nginx
-          image: nginx:latest
+        - name: kuryr-demo
+          image: christianb93/kuryr-demo
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-service
+  name: kuryr-demo-service
 spec:
   selector:
-    app: nginx
+    app: kuryr-demo
   type: ClusterIP
   ports:
   - protocol: TCP
     port: 80
-    targetPort: 80        
+    targetPort: 8888
+
