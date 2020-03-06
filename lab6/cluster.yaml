@@ -152,7 +152,6 @@
     state_dir: "{{playbook_dir}}/../.state"
     cluster_endpoint: "https://{{hostvars.master.node_ip}}:6443"
     os_ca_cert_data: "{{ lookup('file', '{{state_dir}}/ca/os_ca.crt') }}"
-    maintain_routes: true
     disable_service_controller: true
   roles:
     - openstack_cloud_controller
