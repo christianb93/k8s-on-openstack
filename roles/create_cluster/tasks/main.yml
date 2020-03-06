@@ -186,6 +186,7 @@
   loop:
     - worker1
     - worker2
+    - worker3
   register:
     worker_node_ports
 
@@ -205,6 +206,7 @@
   loop:
     - worker1
     - worker2
+    - worker3
   register: worker_nodes
 
 - name: Create pod security group if Kuryr networks are requested
@@ -243,6 +245,7 @@
   loop:
     - worker1
     - worker2
+    - worker3
     - master
   register: floating_ips
 
