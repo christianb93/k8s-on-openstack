@@ -23,7 +23,7 @@ k8s_node_network:
 # the pod CIDR and service CIDR configuration in cluster/groups_vars/all.yml
 
 kuryr_pod_network:
-  network_name: "kuryr-pod-network"
+  network_name: "k8s-node-network"
   subnet_name: "kuryr-pod-subnet"
   cidr: "10.1.0.0/24"
   gateway_ip: "10.1.0.1"

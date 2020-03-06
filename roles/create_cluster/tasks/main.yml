@@ -154,6 +154,20 @@
     security_group: node_security_group
     state: present        
 
+- name: Create Neutron port for master node
+  os_port:
+    auth: "{{os.auth}}"      
+    auth_type: password
+    name: "master-port"
+    state: present
+    network: "{{node_network.results[0].network.id}}"
+    fixed_ips:
+      - subnet_id: "{{ node_subnet.results[0].subnet.id }}"
+    port_security_enabled: yes
+    region_name: "{{os.region_name}}"
+    security_groups:
+      - "node_security_group"
+
 
 - name: Create master node
   os_server:
@@ -165,7 +179,7 @@
     image: "{{os.machine_templates.master_nodes.image}}"
     key_name: "os-default-key"
     nics:
-      - net-name: "{{k8s_node_network.network_name}}"
+      - port-name: "master-port"
     security_groups:
       - "node_security_group"
   loop:
@@ -179,6 +193,8 @@
     name: "{{item}}-port"
     state: present
     network: "{{node_network.results[0].network.id}}"
+    fixed_ips:
+      - subnet_id: "{{ node_subnet.results[0].subnet.id }}"
     port_security_enabled: yes
     region_name: "{{os.region_name}}"
     security_groups:
