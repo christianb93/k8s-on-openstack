@@ -52,7 +52,10 @@ For the Kuryr daemon, a few additional points are relevant.
 * the plugin also needs the *kuryr.conf* file which we therefore copy to the hosts */etc/kuryr/* directory as well
 * we could proceed in a similar fashion with the binary, but we use a slightly different approach - similar to how the other CNI plugins are installed, we copy the Kuryr plugin to each worker node as part of the existing cni_plugins role
 
-Finally, we have to create security group rules. As we use the default member mode ("layer 3 mode") for the Octavia load balancers created by Kuryr, the Octavia load balancer will try to reach each pod from the service subnet. Thus, we need to allow traffic from the service subnet into the pod subnet. As Kuryr will automatically attach the security group configured via *pod_security_group_id* to each pod, we thus have to add a security group rule to this security group which allows incoming traffic from the service subnet. 
+Finally, we have to create security group rules. As we use the default member mode ("layer 3 mode") for the Octavia load balancers created by Kuryr, the Octavia load balancer will try to reach each pod from the service subnet. Thus, we need to allow traffic from the service subnet into the node subnet. How to do this depends on the type of driver used. 
+
+* If we use a driver that attaches the pods VIF directly to the OVS bridge, we need to make sure that the port of the pod allows incoming traffic from the service subnet. As Kuryr will automatically attach the security group configured via *pod_security_group_id* to each pod, we thus have to add a security group rule to this security group which allows incoming traffic from the service subnet. 
+* If we use the MACVLAN driver (as we do it), this does NOT work, as the port attached to the pod is only used to reserve the IP address of the pod, and the traffic travels via the Neutron port attached to the worker node. Therefore, in this case, we have to add a corresponding rule to the security group of the worker node.
 
 
 TBD: we have turned k8s user into an admin user - is that really needed?
