@@ -81,5 +81,55 @@ for src_pod in "${pods[@]}"; do
 done
 
 
+#
+# Now wait for the loadbalancer to be ACTIVE
+#
+lb_state="x"
+attempts=0
+while [ "$lb_state" != "ACTIVE" ]; do
+    sleep 3;
+    lb_state=$(openstack loadbalancer show default/kuryr-demo-service -f value -c provisioning_status)
+    let attemps++
+    if [ "$attempts" -gt "32" ]; then 
+      echo -e "\033[31mTimed out while waiting for load balancer \033[0m"
+      exit 1
+    fi
+done
+
+#
+# Give the load balancer a bit more time to set up all members
+#
+sleep 3
+
+echo "Load balancer is ACTIVE, running tests against load balancer endpoint"
+vip=$(kubectl get svc kuryr-demo-service --no-headers -o custom-columns=":spec.clusterIP")
+for src_pod in "${pods[@]}"; do
+    echo "$src_pod ---> $vip"
+    kubectl exec $src_pod -- curl $vip  > /dev/null 2>&1
+    success=$?
+    if [ "$success" != "0" ]; then
+        echo -e "\033[31mCurlfrom $src_pod to $vip failed \033[0m"
+        let errors++
+    fi
+done
+
+echo "Now trying to reach Kubernetes endpoint"
+for src_pod in "${pods[@]}"; do
+    echo "$src_pod ---> Kubernetes API"
+    kubectl exec $src_pod -- kubectl get svc > /dev/null
+    success=$?
+    if [ "$success" != "0" ]; then
+        echo -e "\033[31mAPI request from $src_pod failed \033[0m"
+        let errors++
+    fi
+done
+
+
+if [ "$errors" -gt "0" ]; then  
+    echo -e "\033[31mFound $errors errors \033[0m"
+    exit 1
+fi
+
+
 
 
