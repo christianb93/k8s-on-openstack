@@ -265,6 +265,35 @@
     - master
   register: floating_ips
 
+- debug:
+    var: master_nodes.results[0].server
+
+- name: When using Kuryr, add a loadbalancer to be able to reach the API endpoint
+  os_loadbalancer:
+    auth: "{{os.auth}}"      
+    auth_type: password
+    auto_public_ip: "no"
+    wait: "yes"
+    name: "kubernetes-service"
+    vip_address: "10.2.0.1"
+    vip_subnet: "{{kuryr_service_network.subnet_name}}"
+    listeners:
+      - name: "kubernetes-service"
+        protocol: "HTTPS"
+        protocol_port: "443"
+        pool:
+          name: "kubernetes-service"
+          protocol: "HTTPS"
+          lb_algorithm: "ROUND_ROBIN"
+          members:
+            - address: "{{( master_nodes.results[0].server.addresses[k8s_node_network.network_name] | selectattr('OS-EXT-IPS:type', 'equalto', 'fixed') | map(attribute='addr') | list)[0]}}"
+              name: "kubernetes_service"
+              protocol_port: "6443"
+              subnet: "{{k8s_node_network.subnet_name}}"
+  when: 
+    create_kuryr_networks
+  
+
 
 - name: Create inventory file 
   template:
