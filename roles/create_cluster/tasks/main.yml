@@ -265,9 +265,6 @@
     - master
   register: floating_ips
 
-- debug:
-    var: master_nodes.results[0].server
-
 - name: When using Kuryr, add a loadbalancer to be able to reach the API endpoint
   os_loadbalancer:
     auth: "{{os.auth}}"      
