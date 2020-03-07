@@ -99,6 +99,8 @@ stringData:
     enabled_handlers=vif,lbaasspec,lb
     token_file=/var/run/secrets/kubernetes.io/serviceaccount/token 
     ssl_ca_crt_file=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt 
+    ssl_verify_server_crt=true
+
 
     [cni_daemon]
     docker_mode=true
