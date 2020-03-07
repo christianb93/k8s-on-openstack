@@ -7,7 +7,7 @@ RUN apt-get -y update && apt-get -y install git
 #
 # Get sourcecode
 #
-RUN git clone https://github.com/openstack/kuryr-kubernetes.git/ -b stable/stein --depth=1
+RUN git clone https://github.com/openstack/kuryr-kubernetes.git/ -b stable/train --depth=1
 #
 # Run install 
 #
