@@ -137,12 +137,26 @@ for src_pod in "${pods[@]}"; do
     fi
 done
 
+echo "Check that there is a floating IP reachable from the network node"
+floatingIP=$(kubectl get svc kuryr-demo-service --no-headers -o custom-columns=":.status.loadBalancer.ingress[0].ip")
+if [ "$floatingIP" == "" ]; then
+  echo -e "\033[31mNo floating IP found \033[0m"
+  exit 1
+fi
+echo "Found floating IP $floatingIP, trying to reach this from the network node"
+ssh network "curl $floatingIP" > /dev/null 2>&1
+success=$?
+if [ "$success" != "0" ]; then
+    echo -e "\033[31mCurl to floating IP $floatingIP failed \033[0m"
+    let errors++
+fi
+
 
 if [ "$errors" -gt "0" ]; then  
     echo -e "\033[31mFound $errors errors \033[0m"
     exit 1
 fi
-
+echo "Done"
 
 
 

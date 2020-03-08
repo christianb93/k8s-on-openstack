@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: kuryr-demo
-          image: christianb93/kuryr-demo:v0.2
+          image: christianb93/demo:v0.2
       serviceAccount: demo-sa
 ---
 apiVersion: v1
@@ -43,7 +43,7 @@ metadata:
 spec:
   selector:
     app: kuryr-demo
-  type: ClusterIP
+  type: LoadBalancer
   ports:
   - protocol: TCP
     port: 80

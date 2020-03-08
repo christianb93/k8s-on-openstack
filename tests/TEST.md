@@ -178,6 +178,17 @@ openstack loadbalancer amphora show $amphora
 openstack loadbalancer member list $pool
 ```
 
+As our service is of type LoadBalancer, Kuryr will also create a floating IP pointing to the VIP. You should see this floating IP in the service:
 
+```
+kubectl get svc kuryr-demo-service --no-headers -o custom-columns=":.status.loadBalancer.ingress[0].ip"
+```
+
+and as a floating ip
+
+```
+vip=$(openstack loadbalancer show default/kuryr-demo-service -f value -c vip_address)
+openstack floating ip list --fixed-ip=$vip -f value -c "Floating IP Address"
+```
 
 

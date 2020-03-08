@@ -6,7 +6,7 @@ metadata:
 spec:
   containers:
     - name: demo
-      image: christianb93/kuryr-demo:v0.2
+      image: christianb93/demo:v0.2
       volumeMounts:
         - mountPath: /etc/os_credentials
           name: os-ca-credentials
