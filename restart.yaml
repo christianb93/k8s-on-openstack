@@ -1,7 +1,0 @@
----
-# Update the base environment (we need this, as the state, i.e. certs, contain public IP addresses)
-- include: base/base.yaml
-# Update the OpenStack installation
-- include: os/restart.yaml
-# Make sure that we have the correct IP address for the install_node
-- include: nodes/nodes.yaml
