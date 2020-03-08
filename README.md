@@ -106,9 +106,24 @@ This installation requires several binaries for the Kubernetes components and th
 * The underlying OpenStack release is the Stein release, mostly taken from the official Ubuntu Bionic cloud archive
 * some labs use the Kuryr plugin, which is taken from the Train release - the Dockerfile and build instructions are in *roles/kuryr*
 
-TBD: 
 
 
-* use tagging to only execute needed tasks at restart, and delete restart scripts
-* fix deprecation message when using include in Ansible playbook
+# Refreshing, stopping and restarting
+
+To destroy all OpenStack resources created (i.e. instances, routers, floating IPs, networks and potentially load balancers), so that we can start over again with a fresh setup without having to delete the underlying resources, run
+
+```
+tools/refresh.sh
+```
+
+and then, to recreate the OpenStack resources
+
+```
+ansible-playbook nodes/nodes.yaml
+```
+
+# TBD
+
+* use a static external IP for the network node - this should make a large part of the restart logic obsolete
 * when we restart, our script to update the tagging of the lb_port might fail if the OS API is not yet reachable - maybe we should simply restart the OVS agent as part of the restart script at a point in time when the API is already available
+* fix deprecation message when using include in Ansible playbook

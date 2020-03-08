@@ -1,0 +1,79 @@
+#!/bin/bash
+
+#
+#
+#
+scriptdir=$( cd $(dirname $0) && pwd)
+statedir=$scriptdir/../.state
+source $statedir/credentials/k8s-openrc
+
+#
+# First get all server names
+#
+servers=$(openstack server list -f value -c Name)
+
+
+#
+# Delete servers and associated ports
+#
+
+for server in $servers; do
+  port="$server-port"
+  echo "Deleting server $server and port $port"
+  openstack server delete $server
+  openstack port delete $port
+done
+
+#
+# Delete all load balancers
+#
+lbs=$(openstack loadbalancer list --project=k8s -f value -c name)
+for lb in $lbs; do  
+  echo "Deleting load balancer $lb"
+  openstack loadbalancer delete --cascade $lb
+done 
+
+
+#
+# Now delete all floating ips
+#
+
+fips=$(openstack floating ip list -f value -c ID )
+for fip in $fips; do
+  openstack floating ip delete $fip;
+done
+
+#
+# Next find all subnets attached to the router and delete them
+#
+subnets=$(openstack router show k8s-router -c interfaces_info -f value | jq -r ".[].subnet_id")
+for subnet in $subnets; do
+  echo "Detaching subnet $subnet from router"
+  openstack router remove subnet k8s-router $subnet
+done
+
+#
+# Delete router
+#
+routers=$(openstack router list | grep "k8s-router" | wc -l)
+if [ $routers -gt 0 ]; then
+  openstack router delete k8s-router
+fi
+
+#
+# Delete all subnets in the project
+#
+subnets=$(openstack subnet list -c Name -f value --project=k8s)
+for subnet in $subnets; do
+  echo "Deleting subnet $subnet"
+  openstack subnet delete $subnet
+done
+
+#
+# Do the same for networks
+#
+networks=$(openstack network list -c Name -f value --project=k8s)
+for network in $networks; do
+  echo "Deleting network $network"
+  openstack network delete $network
+done
