@@ -1,0 +1,37 @@
+#
+# Use gcloud to delete all resources in the project
+# Use this with care and only if your Terraform state is broken
+# Typically you want to run this from a gcloud shell to manage authorization
+#
+
+#
+# Delete compute instances
+# 
+gcloud compute instances delete network controller compute0 compute1 storage --zone=europe-west3-a -q
+#
+# Release reserved IP
+#
+gcloud compute addresses delete network-node-public-ip -q --region=europe-west3
+#
+# Delete disks and image
+#
+gcloud compute disks delete dummy-disk lvm-volume -q --zone=europe-west3-a
+gcloud compute images delete my-ubuntu-image -q
+#
+# now delete the firewall rules
+# 
+rules=$(gcloud compute firewall-rules list --format=json | jq -r ".[].id")
+for rule in $rules; do
+  gcloud compute firewall-rules delete $rule -q
+done
+#
+# the subnets 
+#
+subnets=$(gcloud compute networks subnets list --filter="name != default" --format=json | jq -r ".[].id")
+for subnet in $subnets; do
+  gcloud compute networks subnets delete $subnet --region=europe-west3 -q
+done
+#
+# and the networks
+#
+gcloud compute networks delete management-vpc public-vpc underlay-vpc -q
