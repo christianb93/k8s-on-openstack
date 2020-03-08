@@ -197,6 +197,13 @@ resource "google_compute_firewall" "underlay-firewall" {
   
 }
 
+#
+# Create a static external IP that we will use for our network node
+#
+resource "google_compute_address" "network-node-public-ip" {
+  name = "network-node-public-ip"
+}
+
 
 ###############################################################################
 # The image. To make nested virtualization work, we need an image with a 
@@ -284,6 +291,7 @@ resource "google_compute_instance" "network" {
     network       = google_compute_network.public-vpc.self_link
     subnetwork    = google_compute_subnetwork.public-subnetwork.self_link
     access_config {
+      nat_ip = google_compute_address.network-node-public-ip.address
     }
   }
 
