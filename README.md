@@ -95,27 +95,6 @@ cd base
 terraform destroy -auto-approve
 ```
 
-To only destroy the network and servers in the cluster, run
-```
-source .state/credentials/k8s-openrc
-servers=$(openstack server list -f value -c Name)
-for server in $servers; do
-  openstack server delete $server;
-done
-fips=$(openstack floating ip list -f value -c ID )
-for fip in $fips; do
-  openstack floating ip delete $fip;
-done
-openstack router remove subnet k8s-router k8s-node-subnet
-openstack router delete k8s-router
-for port in worker1-port worker2-port; do
-  openstack port delete $port;
-done
-openstack network delete k8s-node-network
-```
-
-and then re-run *nodes/nodes.yaml* and *cluster/cluster.yaml*. 
-
 
 # Binaries and versions used
 
@@ -124,9 +103,12 @@ This installation requires several binaries for the Kubernetes components and th
 * The Kubernetes binaries are taken from [release 1.17.1](https://github.com/kubernetes/kubernetes/releases/tag/v1.17.1), using the download links for the server and client binaries provided in the [release notes](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.17.md#downloads-for-v1171). Specifically, I downloaded [the server tar](https://dl.k8s.io/v1.17.1/kubernetes-server-linux-amd64.tar.gz) and [the node tar](https://dl.k8s.io/v1.17.1/kubernetes-node-linux-amd64.tar.gz), extracted them and uploaded the binaries to Google storage.
 * The reference CNI plugins are taken from [release v0.8.5](https://github.com/containernetworking/plugins/releases/tag/v0.8.5), specifically from [this download link](https://github.com/containernetworking/plugins/releases/download/v0.8.5/cni-plugins-linux-amd64-v0.8.5.tgz)
 * The binaries of those components that we deploy as pods (like kube-proxy, Flannel or CoreDNS) are of course specified in the respective manifest files. For kube-proxy, we use release v1.17.1 as well. For Flannel, I use version v0.11.0-amd64, and CoreDNS is used in version 1.6.5
-* The underlying OpenStack release is the Stein release, mostly taking from the official Ubuntu Bionic cloud archive
+* The underlying OpenStack release is the Stein release, mostly taken from the official Ubuntu Bionic cloud archive
+* some labs use the Kuryr plugin, which is taken from the Train release - the Dockerfile and build instructions are in *roles/kuryr*
 
 TBD: 
 
+
+* use tagging to only execute needed tasks at restart, and delete restart scripts
 * fix deprecation message when using include in Ansible playbook
-* when we restart, our script to update the tagging of the lb_port might fail if the OS API is not yet reachable
+* when we restart, our script to update the tagging of the lb_port might fail if the OS API is not yet reachable - maybe we should simply restart the OVS agent as part of the restart script at a point in time when the API is already available
