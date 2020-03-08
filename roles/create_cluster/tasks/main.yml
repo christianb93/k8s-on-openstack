@@ -32,6 +32,8 @@
     state: present
   loop:
     - "{{k8s_node_network}}"
+  loop_control:
+    label: "{{ item.network_name }}"
   register:
     node_network 
 
@@ -47,6 +49,8 @@
   loop:
     - "{{kuryr_pod_network}}"
     - "{{kuryr_service_network}}"
+  loop_control:
+    label: "{{ item.network_name }}"
   when: 
     create_kuryr_networks 
 
@@ -64,6 +68,8 @@
     allocation_pool_end:  "{{item.pool_end}}"
   loop:
     - "{{k8s_node_network}}"
+  loop_control:
+    label: "{{ item.subnet_name }}"
   register:
     node_subnet
 
@@ -71,7 +77,6 @@
   os_subnet:
     auth: "{{os.auth}}"
     auth_type: password
-    enable_dhcp: yes
     gateway_ip: "{{item.gateway_ip}}"
     cidr: "{{item.cidr}}"
     network_name: "{{item.network_name}}"
@@ -83,6 +88,8 @@
   loop:
     - "{{kuryr_pod_network}}"
     - "{{kuryr_service_network}}"
+  loop_control:
+    label: "{{ item.subnet_name }}"
   when: 
     create_kuryr_networks 
   register: 

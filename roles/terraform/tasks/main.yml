@@ -40,3 +40,5 @@
     underlay_ip: "{{ item.underlay_ip }}"
     extra_ssh_config_items: "{{ item.extra_ssh_config_items | default('') }}"
   loop: "{{ tf_results.outputs.inventory.value }}"
+  loop_control:
+    label: "{{ item.name }}"

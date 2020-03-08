@@ -1,6 +1,6 @@
 # k8s-on-openstack
 
-This repository contains a collection of labs and Ansible scripts to deploy Kubernetes on top of OpenStack in Googles cloud platform. It is organized in labs, built on each other, where each lab describes one part of the setup. After completing all labs, we will have a Kubernetes environment on top of and integrated with OpenStack using the Kuryr CNI plugin, the OpenStack external cloud provider and a CSI plugin for Cinder, all running on a couple of nodes in Google's GCE.
+This repository contains a collection of labs and Ansible scripts to deploy Kubernetes on top of OpenStack in Googles cloud platform. It is organized in labs, built on each other, where each lab describes one part of the setup. After completing all labs, we will have a Kubernetes environment on top of and integrated with OpenStack using the Kuryr CNI plugin (in some of the labs), the OpenStack external cloud provider and a CSI plugin for Cinder, all running on a couple of nodes in Google's GCE.
 
 We will be using Terraform to manage the GCE environment and Ansible to bring up OpenStack and Kubernetes. We will **not** use a tool like kubeadm, but instead create our own collection of scripts to install Kubernetes - simply because the main intent of this exercise is to understand how all this works and not to have a working configuration.
 
@@ -25,7 +25,6 @@ The labs are structured as follows:
 * Lab4 - use Flannel with the host-gw backend
 * Lab5 - leverage the OpenStack router to build a network solution
 * Lab6 - play with the Kuryr networking solution
-
 
 
 # Sizing of the environment
@@ -113,17 +112,19 @@ This installation requires several binaries for the Kubernetes components and th
 To destroy all OpenStack resources created (i.e. instances, routers, floating IPs, networks and potentially load balancers), so that we can start over again with a fresh setup without having to delete the underlying resources, run
 
 ```
-tools/refresh.sh
+tools/refresh
 ```
 
 and then, to recreate the OpenStack resources
 
 ```
 ansible-playbook nodes/nodes.yaml
-```
+``` 
 
-# TBD
+To reduce charges, it is advisable to stop all GCP instances when the environment is not used. The scripts are designed in such a way that when the instances come up again, the environment will be recovered and should be operating as normal, maybe after a short phase of a few minutes required to recreate all virtual machines and pods. 
 
-* use a static external IP for the network node - this should make a large part of the restart logic obsolete
-* when we restart, our script to update the tagging of the lb_port might fail if the OS API is not yet reachable - maybe we should simply restart the OVS agent as part of the restart script at a point in time when the API is already available
-* fix deprecation message when using include in Ansible playbook
+In case the Terraform state is broken, you can also delete all resources in GCP manually by running `tools/gcloud_delete` from a Google cloud shell  - use this with care!
+
+Also note that the Terraform script adds ingress firewall rules to allow traffic from your **current** IP address. If this changes, for instance because your provider disconnects you at some point at night and reconnects, you will have to run `(cd base ; terraform apply -auto-approve)` to refresh the firewall rules.
+
+

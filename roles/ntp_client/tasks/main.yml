@@ -4,6 +4,7 @@
     update_cache: yes
     name: chrony
     state: latest
+    force_apt_get: yes
 - name: Remove all pool entries from log file
   lineinfile:
     regexp: "^pool"

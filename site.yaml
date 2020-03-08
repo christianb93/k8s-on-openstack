@@ -1,7 +1,7 @@
 ---
 # Create the base environment
-- include: base/base.yaml
+- import_playbook: base/base.yaml
 # Run the OpenStack installation
-- include: os/os.yaml
+- import_playbook: os/os.yaml
 # Bring up the Kubernetes nodes as OpenStack instances
-- include: nodes/nodes.yaml
+- import_playbook: nodes/nodes.yaml
