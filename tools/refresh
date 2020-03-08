@@ -27,7 +27,7 @@ done
 #
 # Delete all load balancers
 #
-lbs=$(openstack loadbalancer list --project=k8s -f value -c name)
+lbs=$(openstack loadbalancer list --project=k8s -f value -c id)
 for lb in $lbs; do  
   echo "Deleting load balancer $lb"
   openstack loadbalancer delete --cascade $lb
