@@ -199,17 +199,25 @@ Once the node plugin daemon set has been deployed and the corresponding pod is r
 ```
 nodes=$(kubectl get nodes  --no-headers -o custom-columns=":.metadata.name")
 for node in $nodes; do
-  annotation=$(kubectl get node $node -o json | jq -r '.metadata.annotations["csi.volume.kubernetes.io/nodeid"]')
-  if [ "$annotation" != "null" ]; then
-    echo "Found proper annotation $annotation"
-  else
-    echo "Could not find annotation on worker node $node"
-  fi
-  csiNode=$(kubectl get csinode $node --no-headers | wc -l)
-  if [ "$csiNode" == "1" ]; then
-    echo "Found CSI node for node $node"
-  else
-    echo "Could not find CSI node for node $node"
-  fi
+  kubectl get node $node -o json | jq -r '.metadata.annotations["csi.volume.kubernetes.io/nodeid"]'
+  kubectl get csinode $node --no-headers 
 done 
 ```
+
+Next, let us verify that the volume provisioning works. Once we have created a storage class and the CSI controller plugin is running, we can create a PVC and a pod consuming it and should see that it has been attached.
+
+```
+kubectl apply -f tests/test6.yaml
+kubectl get pods
+# Wait until pod is ready
+openstack volume list
+kubectl exec test6 -- ls /csiVolume
+```
+
+We should also see that a corresponding volume attachment has been created.
+
+```
+kubectl get volumeattachment
+```
+
+When you delete the pod and the PVC again, you should also find that the Cinder volume has been deleted as well.

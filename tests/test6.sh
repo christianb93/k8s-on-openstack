@@ -24,12 +24,49 @@ for node in $nodes; do
   if [ "$annotation" != "null" ]; then
     echo "Found proper annotation $annotation"
   else
-    echo "Could not find annotation on worker node $node"
+    echo -e "\033[31mCould not find annotation on worker node $node \033[0m"
   fi
   csiNode=$(kubectl get csinode $node --no-headers | wc -l)
   if [ "$csiNode" == "1" ]; then
     echo "Found CSI node for node $node"
   else
-    echo "Could not find CSI node for node $node"
+    echo -e "\033[31mCould not find CSI node for node $node \033[0m"
   fi
 done 
+
+#
+# Now create a PVC
+#
+kubectl apply -f $scriptdir/test6.yaml
+#
+# and wait until the PVC becomes visible
+#
+created=0
+while [ "$created" == "0" ]; do
+  created=$(kubectl get pvc | grep "csi-test" | wc -l)
+  sleep 1
+done 
+#
+# Now get the ID of the PVC and wait for the corresponding cinder volume
+#
+pvcID=$(kubectl get pvc csi-test --no-headers -o custom-columns=":metadata.uid")
+volume="pvc-$pvcID"
+echo "Waiting for Cinder volume $volume to be attached"
+exists=0
+while [ "$exists" == "0" ]; do
+  exists=$(openstack volume list | grep "$volume" | wc -l)
+done
+#
+# Wait until volume is in-use
+#
+status=$(openstack volume show $volume -c status -f value)
+while [ "$status" != "in-use" ]; do
+  status=$(openstack volume show $volume -c status -f value)
+done
+echo "Checking that volume is mounted into pod"
+found=$(kubectl exec test6 ls | grep "csiVolume" | wc -l)
+if [ "$found" == "1" ]; then
+  echo "Success"
+else
+  echo -e "\033[31mCheck failed \033[0m"
+fi
