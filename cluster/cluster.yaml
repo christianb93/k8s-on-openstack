@@ -172,3 +172,10 @@
   roles:
     - core_dns
         
+- name: Install CSI plugin
+  hosts: localhost
+  become: no
+  vars_files:
+    "{{playbook_dir}}/group_vars/all.yml"
+  roles:
+    - cinder_csi_plugin
