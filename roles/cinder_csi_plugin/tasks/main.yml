@@ -6,7 +6,28 @@
   template:
     src: csi_node_plugin.yaml.j2
     dest: "{{state_dir}}/config/csi_node_plugin.yaml"
-
 - name: Deploy node plugin
   shell: |
     kubectl --kubeconfig={{state_dir}}/config/admin-kubeconfig apply -f "{{state_dir}}/config/csi_node_plugin.yaml"
+
+#
+# Prepare manifest file for the controller plugin
+#
+- name: Prepare manifest file for controller plugin
+  template:
+    src: csi_controller_plugin.yaml.j2
+    dest: "{{state_dir}}/config/csi_controller_plugin.yaml"
+- name: Deploy controller plugin
+  shell: |
+    kubectl --kubeconfig={{state_dir}}/config/admin-kubeconfig apply -f "{{state_dir}}/config/csi_controller_plugin.yaml"
+
+#
+# Create storage class
+#
+- name: Prepare manifest file for controller plugin
+  template:
+    src: csi_storage_class.yaml.j2
+    dest: "{{state_dir}}/config/csi_storage_class.yaml"
+- name: Apply storage class
+  shell: |
+    kubectl --kubeconfig={{state_dir}}/config/admin-kubeconfig apply -f "{{state_dir}}/config/csi_storage_class.yaml"
