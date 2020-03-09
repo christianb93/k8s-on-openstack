@@ -60,6 +60,16 @@
     owner: root 
     group: root
     mode: 0644
+# 
+# Adapt systemd unit file to ensure restart on failure
+#
+- name: Adapt systemd unit file 
+  lineinfile:
+    regexp: "^Restart="
+    state: present 
+    line: "Restart=always"
+    path: "/lib/systemd/system/apache2.service"
+
 - name: Restart apache
   service:
     name: apache2
