@@ -192,3 +192,24 @@ openstack floating ip list --fixed-ip=$vip -f value -c "Floating IP Address"
 ```
 
 
+# Testing the Cinder CSI plugin
+
+Once the node plugin daemon set has been deployed and the corresponding pod is running on each node, we can already test that the plugin is working. For that purpose, let us verify that for each node, a CSI node object has been created and the node ID has been added as annotation to the node as well.
+
+```
+nodes=$(kubectl get nodes  --no-headers -o custom-columns=":.metadata.name")
+for node in $nodes; do
+  annotation=$(kubectl get node $node -o json | jq -r '.metadata.annotations["csi.volume.kubernetes.io/nodeid"]')
+  if [ "$annotation" != "null" ]; then
+    echo "Found proper annotation $annotation"
+  else
+    echo "Could not find annotation on worker node $node"
+  fi
+  csiNode=$(kubectl get csinode $node --no-headers | wc -l)
+  if [ "$csiNode" == "1" ]; then
+    echo "Found CSI node for node $node"
+  else
+    echo "Could not find CSI node for node $node"
+  fi
+done 
+```
