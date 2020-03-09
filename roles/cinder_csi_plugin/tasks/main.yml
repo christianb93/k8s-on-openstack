@@ -1,0 +1,12 @@
+---
+#
+# Prepare manifest file for the node plugin and sidecar
+#
+- name: Prepare manifest file for node plugin
+  template:
+    src: csi_node_plugin.yaml.j2
+    dest: "{{state_dir}}/config/csi_node_plugin.yaml"
+
+- name: Deploy node plugin
+  shell: |
+    kubectl --kubeconfig={{state_dir}}/config/admin-kubeconfig apply -f "{{state_dir}}/config/csi_node_plugin.yaml"

@@ -1,0 +1,181 @@
+---
+
+- name: Wait for all machines to become ready
+  hosts: all
+  gather_facts: no
+  tasks:
+  - name: Wait for machine to become reachable
+    wait_for_connection:
+      delay: 5
+      sleep: 10
+
+- name: Initial node setup
+  hosts: worker_nodes, master_nodes
+  become: yes 
+  roles:
+    - k8s_node_setup
+
+- name: Read cluster configuration 
+  hosts: install_node, localhost
+  become: no 
+  tasks:
+    - name: Read cluster configuration
+      include_vars:
+        file: "{{state_dir}}/config/config.yaml"
+
+
+#
+# There are some additional certificates that we can only create now, once all
+# IP addresses are known
+#
+- name: Create additional certificates 
+  hosts: localhost
+  become: no
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+  roles:
+    - late_certs
+
+- name: Install etcd on master node 
+  hosts: master
+  become: yes
+  roles:
+    - etcd
+
+    
+- name: Install Kubernetes API server 
+  hosts: master
+  become: yes
+  vars:
+    kube_apiserver_binary_url: https://storage.googleapis.com/leftasexercise.com/kube-binaries/kube-apiserver
+  roles:
+    - kubernetes_apiserver
+
+
+- name: Configure proxy server on install node if possible to proxy API server 
+  hosts: install_node 
+  become: yes 
+  roles:
+    - api_proxy
+  
+  
+- name: Create kubeconfig file for cluster admin
+  hosts: localhost 
+  become: no
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+    client_key_file: "{{state_dir}}/k8s_certs/admin_client.rsa"
+    client_cert_file: "{{state_dir}}/k8s_certs/admin_client.crt"
+    cluster_ca_file: "{{state_dir}}/ca/k8s_ca.crt"
+    kubeconfig_dest: "{{state_dir}}/config/admin-kubeconfig"
+    cluster_endpoint: "https://{{os.install_node.ip}}:6443"
+    cluster_name: "my-cluster"
+    user_name: "admin"
+  roles:
+    - kubeconfig
+
+- name: Create kubeconfig file for the controller manager
+  hosts: localhost
+  become: no 
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+    client_key_file: "{{state_dir}}/k8s_certs/controller_apiserver_client.rsa"
+    client_cert_file: "{{state_dir}}/k8s_certs/controller_apiserver_client.crt"
+    cluster_ca_file:  "{{state_dir}}/ca/k8s_ca.crt"
+    kubeconfig_dest: "{{state_dir}}/config/controller-manager-kubeconfig"
+    cluster_name: "my-cluster"
+    cluster_endpoint: "https://{{hostvars.master.node_ip}}:6443"
+    user_name: system:kube-controller-manager
+  roles:
+    - kubeconfig
+
+
+
+- name: Install Kubernetes controller manager 
+  hosts: master 
+  become: yes 
+  vars:
+    kube_controller_manager_binary_url: https://storage.googleapis.com/leftasexercise.com/kube-binaries/kube-controller-manager
+  roles:
+    - kubernetes_controller_manager
+
+
+- name: Create kubeconfig file for the controller manager
+  hosts: localhost
+  become: no 
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+    client_key_file: "{{state_dir}}/k8s_certs/scheduler_client.rsa"
+    client_cert_file: "{{state_dir}}/k8s_certs/scheduler_client.crt"
+    cluster_ca_file:  "{{state_dir}}/ca/k8s_ca.crt"
+    kubeconfig_dest: "{{state_dir}}/config/scheduler-kubeconfig"
+    cluster_name: "my-cluster"
+    cluster_endpoint: "https://{{hostvars.master.node_ip}}:6443"
+    user_name: system:kube-scheduler
+  roles:
+    - kubeconfig
+  
+- name: Install Kubernetes scheduler
+  hosts: master 
+  become: yes 
+  vars:
+    kube_scheduler_binary_url: https://storage.googleapis.com/leftasexercise.com/kube-binaries/kube-scheduler
+  roles:
+    - kubernetes_scheduler
+
+# 
+# We are now done with the installation of the control plane and are ready to install the worker nodes
+#
+
+- name: Prepare bootstrap procedure  
+  hosts: localhost 
+  become: no 
+  vars: 
+    state_dir: "{{playbook_dir}}/../.state"
+  roles:
+    - prepare_tls_bootstrap
+
+- name: Install kubelet and CNI plugins
+  hosts: worker_nodes
+  become: yes 
+  vars:
+    kubelet_binary_url: https://storage.googleapis.com/leftasexercise.com/kube-binaries/kubelet
+    cni_plugins_binary_url_base: https://storage.googleapis.com/leftasexercise.com/kube-binaries
+  roles: 
+    - kubelet 
+    - cni_plugins
+
+- name: Install the OpenStack cloud controller manager 
+  hosts: localhost
+  become: no
+  vars: 
+    state_dir: "{{playbook_dir}}/../.state"
+    cluster_endpoint: "https://{{hostvars.master.node_ip}}:6443"
+    os_ca_cert_data: "{{ lookup('file', '{{state_dir}}/ca/os_ca.crt') }}"
+  roles:
+    - openstack_cloud_controller
+    
+- name: Install kubeproxy and Flannel as DaemonSet
+  hosts: localhost
+  become: no 
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+  roles:
+    - kube_proxy
+    - flannel
+
+- name: Install CoreDNS 
+  hosts: localhost
+  become: no
+  vars_files:
+    "{{playbook_dir}}/group_vars/all.yml"
+  roles:
+    - core_dns
+        
+- name: Install CSI plugin
+  hosts: localhost
+  become: no
+  vars_files:
+    "{{playbook_dir}}/group_vars/all.yml"
+  roles:
+    - cinder_csi_plugin
