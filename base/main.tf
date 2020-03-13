@@ -236,7 +236,7 @@ resource "google_compute_image" "ubuntu_bionic_nested_virtualization" {
 # The controller node
 resource "google_compute_instance" "controller" {
   name         = "controller"
-  machine_type = "n1-standard-2"
+  machine_type = "e2-custom-2-6144"
 
   boot_disk {
     initialize_params {
@@ -250,7 +250,9 @@ resource "google_compute_instance" "controller" {
   }
 
   metadata_startup_script = "sudo apt-get -y remove sshguard"
-  
+
+  allow_stopping_for_update = true 
+
   network_interface {
     # This is the public interface, attached to our public network
     network       = google_compute_network.public-vpc.self_link
@@ -272,7 +274,7 @@ resource "google_compute_instance" "controller" {
 # The network node
 resource "google_compute_instance" "network" {
   name         = "network"
-  machine_type = "n1-standard-4"
+  machine_type = "e2-highcpu-4"
 
   boot_disk {
     initialize_params {
@@ -285,7 +287,9 @@ resource "google_compute_instance" "network" {
   }
 
   metadata_startup_script = "sudo apt-get -y remove sshguard"
-  
+
+  allow_stopping_for_update = true 
+
   network_interface {
     # This is the public interface, attached to our public network
     network       = google_compute_network.public-vpc.self_link
@@ -327,6 +331,9 @@ resource "google_compute_instance" "compute" {
   metadata = {
     ssh-keys = "stack:${file(var.stack_public_ssh_key_file)}"
   }
+  
+  allow_stopping_for_update = true 
+  min_cpu_platform = "Intel Haswell"
 
   network_interface {
     # This is the management interface, attached to our management network
@@ -352,13 +359,16 @@ resource "google_compute_disk" "lvm_volume" {
 }
 resource "google_compute_instance" "storage" {
   name         = "storage"
-  machine_type = "n1-standard-1"
+  machine_type = "g1-small"
   
   boot_disk {
     initialize_params {
       image = google_compute_image.ubuntu_bionic_nested_virtualization.self_link
     }
   }
+
+  allow_stopping_for_update = true 
+
 
   attached_disk {
     source        = google_compute_disk.lvm_volume.self_link
