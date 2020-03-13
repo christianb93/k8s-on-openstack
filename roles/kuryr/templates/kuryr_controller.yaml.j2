@@ -69,7 +69,7 @@ stringData:
     lock_path=/tmp 
 
     [neutron]
-    auth_url=https://{{os.install_node.ip}}:5000/v3
+    auth_url=https://{{os.access_node.ip}}:5000/v3
     auth_type=password
     username={{os.auth.username}}
     user_domain_name=default
@@ -94,7 +94,7 @@ stringData:
     link_iface=ens3 
     
     [kubernetes]
-    api_root=https://{{os.install_node.ip}}:6443
+    api_root=https://{{os.access_node.ip}}:6443
     pod_vif_driver=nested-macvlan
     enabled_handlers=vif,lbaasspec,lb
     token_file=/var/run/secrets/kubernetes.io/serviceaccount/token 

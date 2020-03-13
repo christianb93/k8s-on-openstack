@@ -1,7 +1,7 @@
 os:
     # The install node. This is the node on which we will execute the playbooks during the 
     # Kubernetes installation. 
-    install_node:
+    access_node:
         ip: {{hostvars.network.ansible_ssh_host}}
         user: stack
         ssh_key: {{state_dir}}/ssh/gcp-stack-key 
@@ -35,7 +35,7 @@ os:
             image: ubuntu-bionic 
     #
     # Credentials that we use to access our OpenStack installation 
-    # The auth_url needs to be reachable from the install_node
+    # The auth_url needs to be reachable from the access_node
     #
     auth:
         auth_url: http://controller:5000/v3

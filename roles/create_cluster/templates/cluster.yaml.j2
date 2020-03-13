@@ -18,7 +18,7 @@ worker_nodes:
             ansible_ssh_common_args: >-
                 -o StrictHostKeyChecking=no 
                 -o UserKnownHostsFile=/dev/null 
-                -o "ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i {{os.install_node.ssh_key}} -W %h:%p {{os.install_node.user}}@{{os.install_node.ip}}" 
+                -o "ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i {{os.access_node.ssh_key}} -W %h:%p {{os.access_node.user}}@{{os.access_node.ip}}" 
 {%  endfor %}
 
 master_nodes:
@@ -37,16 +37,16 @@ master_nodes:
             ansible_ssh_common_args: >-
                 -o StrictHostKeyChecking=no 
                 -o UserKnownHostsFile=/dev/null 
-                -o "ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i {{os.install_node.ssh_key}} -W %h:%p {{os.install_node.user}}@{{os.install_node.ip}}" 
+                -o "ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i {{os.access_node.ssh_key}} -W %h:%p {{os.access_node.user}}@{{os.access_node.ip}}" 
 {%  endfor %}
-install_nodes:
+access_nodes:
     hosts:
-        install_node:
-            ansible_ssh_host: {{os.install_node.ip}} #__install_node_ip__
+        access_node:
+            ansible_ssh_host: {{os.access_node.ip}} #__access_node_ip__
             host_key_checking: false 
             ansible_python_interpreter: /usr/bin/python3
-            ansible_ssh_private_key_file: {{os.install_node.ssh_key}}
-            ansible_ssh_user: {{os.install_node.user}}
+            ansible_ssh_private_key_file: {{os.access_node.ssh_key}}
+            ansible_ssh_user: {{os.access_node.user}}
 
 all:
     hosts:

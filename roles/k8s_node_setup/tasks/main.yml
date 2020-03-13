@@ -10,7 +10,7 @@
   loop:
     "{{ hostvars.items() | list }}"
   when: 
-    item[0] != "install_node"
+    item[0] != "access_node"
   loop_control:
     label: "{{ item[0] }}"
 

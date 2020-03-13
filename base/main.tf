@@ -392,7 +392,7 @@ output "inventory" {
   value = concat(
       [ {
         # the Ansible groups to which we will assign the server
-        "groups"           : "['controller_nodes', 'install_node']",
+        "groups"           : "['controller_nodes', 'access_node']",
         "name"             : "${google_compute_instance.controller.name}",
         "ip"               : "${google_compute_instance.controller.network_interface.0.access_config.0.nat_ip }",
         "mgmt_ip"          : "${google_compute_instance.controller.network_interface.1.network_ip}",

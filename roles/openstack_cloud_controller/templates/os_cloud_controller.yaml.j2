@@ -132,7 +132,7 @@ type: Opaque
 stringData: 
   cloud.conf: |
     [Global]
-    auth-url=https://{{os.install_node.ip}}:5000/v3
+    auth-url=https://{{os.access_node.ip}}:5000/v3
     username={{os.auth.username}}
     password={{os.auth.password}}
     tenant-name={{os.auth.os_project_name}}
@@ -145,7 +145,7 @@ stringData:
     manage-security-groups=true
 
     [Route]
-    router-id={{hostvars.install_node.os_router_id}}
+    router-id={{hostvars.access_node.os_router_id}}
 
 ---
 #

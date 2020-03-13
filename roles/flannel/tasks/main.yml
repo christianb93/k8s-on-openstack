@@ -4,7 +4,7 @@
     dest: "{{state_dir}}/config/kube_flannel.yaml"
 
 - name: For non VXLAN backends, add allowed address pairs
-  delegate_to: install_node
+  delegate_to: access_node
   os_port:
     auth: "{{os.auth}}"      
     auth_type: password

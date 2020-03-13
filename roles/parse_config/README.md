@@ -8,8 +8,8 @@ This role parses an OpenStack configuration file as created by the role *os_conf
 
 The following variables are assumed to be set (usually from the config.yaml):
 
-* os.install_node.ip - the public IP of the install node
-* os.install_node.user - the Ansible SSH user to reach this host 
-* os.install_node.ssh_key - the private key file to use to establish the connection
+* os.access_node.ip - the public IP of the install node
+* os.access_node.user - the Ansible SSH user to reach this host 
+* os.access_node.ssh_key - the private key file to use to establish the connection
 
 

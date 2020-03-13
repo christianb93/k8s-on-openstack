@@ -27,7 +27,7 @@
       sleep: 5
 
 - name: Create cluster network and instances
-  hosts: install_node
+  hosts: access_node
   gather_facts: yes 
   roles:
     - create_cluster

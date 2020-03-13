@@ -66,7 +66,7 @@ The following variables need to be defined:
 
 * state_dir - the state directory to which we will write our manifest files
 * os.auth - authentication data for OpenStack as defined in config.yaml created during the execution of *os/os.yaml*
-* os.install_node - information on the install node, from the same file
+* os.access_node - information on the install node, from the same file
 * pod_security_group_id - ID of a security group that we will add to each pod
 * external_network_id - ID of the external network on which we create floating IPs for load balancers
 * k8s_project_id - ID of OpenStack project in which we create resources
