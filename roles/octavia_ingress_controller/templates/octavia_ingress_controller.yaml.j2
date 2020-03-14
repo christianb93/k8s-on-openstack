@@ -1,0 +1,132 @@
+#
+# This is the service account that we use for the ingress controller
+#
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: octavia-ingress-controller
+  namespace: kube-system
+---
+# 
+# We use a separate role for the ingress controller. We need to be able to read
+# services and endpoints, read nodes and ingress and write events and ingress status
+#
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:octavia-ingress-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  - services
+  verbs:
+  - list
+  - get
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - "networking.k8s.io"
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - "networking.k8s.io"
+  resources:
+  - ingresses/status
+  verbs:
+  - patch
+  - update
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: octavia-ingress-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:octavia-ingress-controller
+subjects:
+  - kind: ServiceAccount
+    name: octavia-ingress-controller
+    namespace: kube-system
+---
+# 
+# This secret holds the configuration of the Octavia ingress controller
+# We use a secret for this purpose, as the configuration contains credentials
+#
+kind: Secret
+apiVersion: v1
+metadata:
+  name: os-cloud-config
+  namespace: kube-system
+type: Opaque  
+stringData: 
+  octavia_ingress_controller_conf.yaml: |
+    cluster-name: {{cluster_name}}
+    openstack:
+      auth-url: https://{{os.access_node.ip}}:5000/v3
+      domain-name: default
+      username: {{os.auth.username}}
+      password: {{os.auth.password}}
+      project-name: {{os.auth.os_project_name}}
+      region: {{os.region_name}}
+      ca-file: /etc/os_credentials/os_ca.crt
+    octavia:
+      subnet-id: {{node_subnet_id}}
+      floating-network-id: {{external_network_id}}
+      manage-security-groups: true
+
+---
+#
+# The actual pod
+#
+apiVersion: v1
+kind: Pod
+metadata:
+  name: octavia-ingress-controller
+  namespace: kube-system
+spec:
+  containers:
+    - name: octavia-ingress-controller
+      image: docker.io/k8scloudprovider/octavia-ingress-controller:v1.17.0
+      command:
+        - /bin/octavia-ingress-controller
+        - --config=/etc/os_cloud_provider/octavia_ingress_controller_conf.yaml        
+      volumeMounts:
+        - mountPath: /etc/os_cloud_provider
+          name: cloud-config-volume
+          readOnly: true
+        - mountPath: /etc/os_credentials
+          name: os-ca-credentials
+          readOnly: true
+      resources:
+        requests:
+          cpu: 200m
+  serviceAccountName: octavia-ingress-controller
+  volumes:
+  - name: cloud-config-volume
+    secret:
+      secretName: os-cloud-config
+  - name: os-ca-credentials
+    secret:
+      secretName: os-client-ca

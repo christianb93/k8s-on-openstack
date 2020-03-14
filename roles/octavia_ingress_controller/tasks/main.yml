@@ -1,0 +1,12 @@
+---
+#
+# Prepare manifest file for Octavia ingress controller and apply it
+#
+- name: Prepare manifest file
+  template:
+    src: octavia_ingress_controller.yaml.j2
+    dest: "{{state_dir}}/config/octavia_ingress_controller.yaml"
+
+- name: Apply the newly generated manifest file 
+  shell: |
+    kubectl --kubeconfig={{state_dir}}/config/admin-kubeconfig apply -f {{state_dir}}/config/octavia_ingress_controller.yaml

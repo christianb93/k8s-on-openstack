@@ -26,6 +26,7 @@ The labs are structured as follows:
 * Lab5 - leverage the OpenStack router to build a network solution
 * Lab6 - play with the Kuryr networking solution
 * Lab7 - install the Cinder CSI plugins
+* Lab8 - use the Octavia Ingress controller
 
 
 # Sizing of the environment
