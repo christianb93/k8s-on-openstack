@@ -69,7 +69,7 @@ stringData:
     lock_path=/tmp 
 
     [neutron]
-    auth_url=https://{{os.access_node.ip}}:5000/v3
+    auth_url={{os.public_auth_url}}
     auth_type=password
     username={{os.auth.username}}
     user_domain_name=default

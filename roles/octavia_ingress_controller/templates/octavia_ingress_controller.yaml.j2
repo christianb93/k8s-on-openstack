@@ -84,7 +84,7 @@ stringData:
   octavia_ingress_controller_conf.yaml: |
     cluster-name: {{cluster_name}}
     openstack:
-      auth-url: https://{{os.access_node.ip}}:5000/v3
+      auth-url: {{os.public_auth_url}}
       domain-name: default
       username: {{os.auth.username}}
       password: {{os.auth.password}}

@@ -132,7 +132,7 @@ type: Opaque
 stringData: 
   cloud.conf: |
     [Global]
-    auth-url=https://{{os.access_node.ip}}:5000/v3
+    auth-url={{os.public_auth_url}}
     username={{os.auth.username}}
     password={{os.auth.password}}
     tenant-name={{os.auth.os_project_name}}

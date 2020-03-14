@@ -1,6 +1,7 @@
 os:
     # The install node. This is the node on which we will execute the playbooks during the 
-    # Kubernetes installation. 
+    # Kubernetes installation and which we will use to access our Kubernetes API from the 
+    # public internet later on
     access_node:
         ip: {{hostvars.network.ansible_ssh_host}}
         user: stack
@@ -35,8 +36,10 @@ os:
             image: ubuntu-bionic 
     #
     # Credentials that we use to access our OpenStack installation 
-    # The auth_url needs to be reachable from the access_node
+    # The auth.auth_url needs to be reachable from the access_node, the 
+    # public auth_url is supposed to be reachable from the public internet
     #
+    public_auth_url: https://{{hostvars.network.ansible_ssh_host}}:5000/v3
     auth:
         auth_url: http://controller:5000/v3
         username: k8s
