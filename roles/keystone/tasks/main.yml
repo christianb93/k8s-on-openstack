@@ -63,17 +63,19 @@
 # 
 # Adapt systemd unit file to ensure restart on failure
 #
-- name: Adapt systemd unit file 
-  lineinfile:
-    regexp: "^Restart="
-    state: present 
-    line: "Restart=always"
-    path: "/lib/systemd/system/apache2.service"
+- name: Adapt systemd unit file - add restart option
+  template:
+    dest: "/lib/systemd/system/apache2.service"
+    src: apache2.service.j2
+    owner: root 
+    group: root
+    mode: 0644 
 
 - name: Restart apache
   service:
     name: apache2
     state: restarted
+
 - name: Create service project in Keystone
   os_project:
     auth:
