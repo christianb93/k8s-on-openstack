@@ -179,3 +179,12 @@
     "{{playbook_dir}}/group_vars/all.yml"
   roles:
     - cinder_csi_plugin
+
+
+- name: Install ingress controller
+  hosts: localhost
+  become: no
+  vars_files:
+    "{{playbook_dir}}/group_vars/all.yml"
+  roles:
+    - octavia_ingress_controller    
