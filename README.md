@@ -33,10 +33,10 @@ The labs are structured as follows:
 
 Here are some considerations regarding the sizing of the environment. For the Kubernetes node, we assume the following minimum sizing:
 
-* 2 vCPUs, 4 GB RAM and 20 GB disk space for the master node
-* 1 vCPU, 2 GB RAM and 10 GB disk space for the worker nodes
+* 2 vCPUs, 2 GB RAM and 20 GB disk space for the master node
+* 1 vCPU, 1 GB RAM and 10 GB disk space for the worker nodes
 
-These instances will run on our GCE compute nodes. At the moment, we use two compute nodes, each with 2 vCPU and 7.5 GB of RAM. So the Kubernetes master node would be scheduled on one of the compute nodes and occupy both vCPUs there. The second compute node would then be able to hold two worker nodes, leaving even some RAM available. When we want to spin up additional services like a load balancer, we might need a third compute node. 
+These instances will run on our GCE compute nodes. At the moment, we use two compute nodes, each with 2 vCPU and 6 GB of RAM. This setup allows for a master node and three worker nodes plus potentially one or two Octavia load balancers. 
 
 
 # Preparations

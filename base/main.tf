@@ -318,7 +318,7 @@ resource "google_compute_instance" "network" {
 # The compute nodes
 resource "google_compute_instance" "compute" {
   name         = "compute${count.index}"
-  machine_type = "n1-standard-2"
+  machine_type = "custom-2-6144"
   count = var.compute_node_count
 
   boot_disk {
