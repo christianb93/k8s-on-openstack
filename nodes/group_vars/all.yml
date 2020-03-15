@@ -1,9 +1,6 @@
 ---
 # The directory that contains our state
 state_dir: "{{playbook_dir}}/../.state"
-# The image that we will use for our instances. This image will be downloaded and stored in Glance 
-base_image_url: "http://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img"
-base_image_name: "ubuntu-bionic"
 # 
 # These settings determine the network topology. We will use them to establish an internal network 
 # called k8s-node-network which we connect to the OpenStack provided external network using a router. 

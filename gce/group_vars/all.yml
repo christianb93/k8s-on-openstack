@@ -64,3 +64,6 @@ lb_network_allocation_end: "172.20.0.100"
 # VNC requests
 vnc_ip: "{{hostvars.network.ansible_ssh_host}}"
 vnc_proto: "https"
+# The image that we will use for our instances. This image will be downloaded and stored in Glance 
+base_image_url: "http://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img"
+base_image_name: "ubuntu-bionic"

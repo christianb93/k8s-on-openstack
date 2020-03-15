@@ -173,6 +173,26 @@
     auth_type: password
     name: os-default-key
     public_key_file: "{{install_user_home}}/os-default-key.pub"
+- name: Download base image
+  get_url:
+    dest: "{{install_user_home}}/base.img"
+    url: "{{base_image_url}}"
+- name: Upload image into Glance 
+  os_image:
+    auth:
+      auth_url: http://controller:5000/v3
+      username: k8s
+      os_user_domain_name: "default"
+      os_project_domain_name: "default"
+      os_project_name: "k8s"
+      password: "{{OS_K8S_PASSWORD}}"
+    auth_type: password
+    name: "{{base_image_name}}"
+    owner: "k8s"
+    region_name: "RegionOne"
+    state: present
+    filename: "{{install_user_home}}/base.img"
+
 - name: Create config file 
   template:
     src: config.yaml.j2

@@ -1,5 +1,4 @@
 ---
-
 - name: Wait for all machines to become ready
   hosts: all
   gather_facts: no
@@ -9,12 +8,6 @@
       delay: 5
       sleep: 10
 
-- name: Initial node setup
-  hosts: worker_nodes, master_nodes
-  become: yes 
-  roles:
-    - k8s_node_setup
-
 - name: Read cluster configuration 
   hosts: access_node, localhost
   become: no 
@@ -23,18 +16,19 @@
       include_vars:
         file: "{{state_dir}}/config/config.yaml"
 
-
-#
-# There are some additional certificates that we can only create now, once all
-# IP addresses are known
-#
 - name: Create additional certificates 
   hosts: localhost
   become: no
   vars:
     state_dir: "{{playbook_dir}}/../.state"
   roles:
-    - late_certs
+    - k8s_certs
+
+- name: Initial node setup
+  hosts: worker_nodes, master_nodes
+  become: yes 
+  roles:
+    - k8s_node_setup
 
 - name: Install etcd on master node 
   hosts: master

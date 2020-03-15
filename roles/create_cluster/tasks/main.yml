@@ -1,17 +1,4 @@
 ---
-- name: Download base image
-  get_url:
-    dest: "/home/{{os.access_node.user}}/base.img"
-    url: "{{base_image_url}}"
-- name: Upload image into Glance 
-  os_image:
-    auth: "{{os.auth}}"
-    auth_type: "password"
-    name: "{{base_image_name}}"
-    owner: "k8s"
-    region_name: "{{os.region_name}}"
-    state: present
-    filename: "/home/{{os.access_node.user}}/base.img"
 
 - name: Create node security group
   os_security_group:

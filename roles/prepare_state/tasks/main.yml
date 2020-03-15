@@ -55,23 +55,8 @@
   loop:
     - ca/os_ca.rsa 
     - ca/octavia_ca.rsa
-    - ca/etcd_ca.rsa
-    - ca/k8s_ca.rsa
-    - ca/proxy_ca.rsa
     - os_certs/os_client.rsa
     - os_certs/nginx.rsa
-    - k8s_certs/apiserver_etcd_client.rsa
-    - k8s_certs/etcd_server.rsa
-    - k8s_certs/apiserver.rsa
-    - k8s_certs/apiserver_kubelet_client.rsa
-    - k8s_certs/sa.rsa
-    - k8s_certs/front_proxy_client.rsa
-    - k8s_certs/admin_client.rsa
-    - k8s_certs/controller_manager.rsa
-    - k8s_certs/controller_apiserver_client.rsa
-    - k8s_certs/scheduler.rsa
-    - k8s_certs/scheduler_client.rsa
-    - k8s_certs/kubelet.rsa
 # 
 # We known create CSRs and certificates for all our CAs
 #    
@@ -94,12 +79,6 @@
       path: "{{state_dir}}/ca/os_ca"
     - cn: "Octavia CA"
       path: "{{state_dir}}/ca/octavia_ca"
-    - cn: "etcd CA"
-      path: "{{state_dir}}/ca/etcd_ca"
-    - cn: "Kubernetes CA"
-      path: "{{state_dir}}/ca/k8s_ca"
-    - cn: "Proxy Root CA"
-      path: "{{state_dir}}/ca/proxy_ca"
   loop_control:
     label: "{{ item.cn }}"
 
@@ -115,12 +94,6 @@
       path: "{{state_dir}}/ca/os_ca"
     - cn: "Octavia CA"
       path: "{{state_dir}}/ca/octavia_ca"
-    - cn: "etcd CA"
-      path: "{{state_dir}}/ca/etcd_ca"
-    - cn: "Kubernetes CA"
-      path: "{{state_dir}}/ca/k8s_ca"
-    - cn: "Proxy Root CA"
-      path: "{{state_dir}}/ca/proxy_ca"
   loop_control:
     label: "{{ item.cn }}"
 
@@ -145,24 +118,6 @@
     - cn: "OpenStack client"    
       o: "OpenStack"
       path: "{{state_dir}}/os_certs/os_client"
-    - cn: "kube-apiserver-etcd-client"
-      o: "system:masters"
-      path: "{{state_dir}}/k8s_certs/apiserver_etcd_client"
-    - cn: "kube-apiserver-kubelet-client"
-      o: "system:masters"
-      path: "{{state_dir}}/k8s_certs/apiserver_kubelet_client"
-    - cn: "front-proxy-client"
-      o: "Kubernetes"
-      path: "{{state_dir}}/k8s_certs/front_proxy_client"
-    - cn: "kubernetes-admin"
-      o: "system:masters"
-      path: "{{state_dir}}/k8s_certs/admin_client"
-    - cn: "system:kube-controller-manager"
-      o: ""
-      path: "{{state_dir}}/k8s_certs/controller_apiserver_client"
-    - cn: "system:kube-scheduler"
-      o: ""
-      path: "{{state_dir}}/k8s_certs/scheduler_client"
   loop_control:
     label: "{{ item.cn }}"
 
@@ -200,20 +155,8 @@
       ca: os_ca 
     - path: "{{state_dir}}/os_certs/nginx"
       ca: os_ca 
-    - path: "{{state_dir}}/k8s_certs/apiserver_etcd_client"
-      ca: etcd_ca
-    - path: "{{state_dir}}/k8s_certs/apiserver_kubelet_client"
-      ca: k8s_ca
-    - path: "{{state_dir}}/k8s_certs/front_proxy_client"
-      ca: proxy_ca
-    - path: "{{state_dir}}/k8s_certs/admin_client"
-      ca: k8s_ca
-    - path: "{{state_dir}}/k8s_certs/controller_apiserver_client"
-      ca: k8s_ca
-    - path: "{{state_dir}}/k8s_certs/scheduler_client"
-      ca: k8s_ca
   loop_control:
-    label: "{{ item.ca }}"
+    label: "{{ item.path }}"
 
 
 - name: Combine client certificate and key in one PEM file 
@@ -249,32 +192,5 @@
     label: "{{ item.user }}"
 
 
-- name: Check whether bootstrap token exists 
-  stat:
-    path: "{{state_dir}}/credentials/bootstrap_token"
-  register: bootstrap_token_file
-- name: Create bootstrap token if it does not yet exist
-  shell: |
-    tokenID=$(head -c 16 /dev/random  | od -An -t x2 |  tr -d "\n " | head -c 6)
-    tokenSecret=$(head -c 16 /dev/random  | od -An -t x2 |  tr -d "\n " | head -c 16)
-    echo "$tokenID.$tokenSecret" > {{state_dir}}/credentials/bootstrap_token
-  when: bootstrap_token_file.stat.exists == false
-- name: Read bootstrap token 
-  shell:
-    cat {{state_dir}}/credentials/bootstrap_token
-  register: 
-    bootstrap_token_out 
-- name: Remember bootstrap token  as fact for later use 
-  set_fact:
-    bootstrap_token: "{{bootstrap_token_out.stdout}}"
-- name: Split into token ID and token secret
-  set_fact:
-    token_id: "{{bootstrap_token[0:6]}}"
-    token_secret: "{{bootstrap_token[7:23]}}"
-
-- name: Create manifest for bootstrap token secret
-  template: 
-    src: bootstrapTokenSecret.yaml.j2
-    dest: "{{state_dir}}/credentials/bootstrapTokenSecret.yaml"
 
 
