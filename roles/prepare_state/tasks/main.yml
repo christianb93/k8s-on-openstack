@@ -39,7 +39,7 @@
 - name: Create key pairs locally
   openssh_keypair:
     path: "{{state_dir}}/ssh/{{item}}"
-    size: 2048
+    size: 4096
     type: rsa
     state: present
   loop:
@@ -135,7 +135,7 @@
   loop:
     - cn: "Nginx"
       path: "{{state_dir}}/os_certs/nginx"
-      ip: "{{hostvars.network.ansible_ssh_host}}"
+      ip: "{{access_node_ip}}"
   loop_control:
     label: "{{ item.cn }}"
 
@@ -183,11 +183,11 @@
     - user: admin
       project: admin
       password: "{{OS_ADMIN_PASSWORD}}"
-      public_ip: "{{hostvars.network.ansible_ssh_host}}"
+      public_ip: "{{access_node_ip}}"
     - user: k8s
       project: k8s
       password: "{{OS_K8S_PASSWORD}}"
-      public_ip: "{{hostvars.network.ansible_ssh_host}}"
+      public_ip: "{{access_node_ip}}"
   loop_control:
     label: "{{ item.user }}"
 

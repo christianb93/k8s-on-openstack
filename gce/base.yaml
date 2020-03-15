@@ -48,6 +48,7 @@
   become: no 
   vars:
     state_dir: "{{playbook_dir}}/../.state"
+    access_node_ip: "{{hostvars.network.ansible_ssh_host}}"
   roles:
     - prepare_state
 

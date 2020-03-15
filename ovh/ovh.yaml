@@ -1,0 +1,111 @@
+---
+#
+# Prepare an environment on OVH
+# We use the standard environment variables
+# OS_AUTH_URL
+# OS_USER_DOMAIN_NAME
+# OS_PROJECT_DOMAIN_NAME
+# OS_TENANT_NAME
+# OS_USERNAME
+# OS_PASSWORD
+# OS_REGION_NAME
+# to authenticate. Also make sure that you have (as root) added the
+# repository 
+# deb http://ubuntu-cloud.archive.canonical.com/ubuntu bionic-updates/stein main
+# and install the OpenStack SDK using
+# sudo add-apt-repository 'deb http://ubuntu-cloud.archive.canonical.com/ubuntu bionic-updates/stein main'
+# sudo apt-get update && sudo apt-get install python3-openstackclient python3-octaviaclient
+
+- name: Prepare state directories
+  hosts: localhost 
+  become: no
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+  tasks:
+    - name: Make sure that state directory and all required subdirectories exist 
+      file:
+        path: "{{playbook_dir}}/../{{item}}"
+        state: directory
+      loop:
+        - .state
+        - .state/ssh 
+        - .state/tf 
+        - .state/ca
+        - .state/credentials
+        - .state/os_certs
+        - .state/config
+        - .state/k8s_certs
+
+#
+# We need to create the SSH key upfront as the role prepare_state
+# requires that we know the IP of the access node, but to create this,
+# we need the key...
+#
+- name: Prepare SSH keys and network 
+  hosts: localhost 
+  become: no 
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+  tasks:
+  - name: Create 4096 byte key 
+    openssh_keypair:
+      path: "{{state_dir}}/ssh/os-default-key"
+      size: 4096
+      type: rsa
+  - name: Import SSH key
+    os_keypair:
+      auth:
+        auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
+        username: "{{ lookup('env', 'OS_USERNAME') }}"
+        os_user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
+        os_project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
+        os_project_name: "{{ lookup('env', 'OS_TENANT_NAME') }}"
+        password: "{{ lookup('env', 'OS_PASSWORD') }}"
+      auth_type: password
+      name: os-default-key
+      public_key_file: "{{state_dir}}/ssh/os-default-key.pub"
+  - name: Create external network
+    os_network:
+      auth:
+        auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
+        username: "{{ lookup('env', 'OS_USERNAME') }}"
+        os_user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
+        os_project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
+        os_project_name: "{{ lookup('env', 'OS_TENANT_NAME') }}"
+        password: "{{ lookup('env', 'OS_PASSWORD') }}"
+      auth_type: password
+      external: no
+      name: "external-network"
+      shared: false
+      state: present
+  - name: Create subnet on external network 
+    os_subnet:
+      auth:
+        auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
+        username: "{{ lookup('env', 'OS_USERNAME') }}"
+        os_user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
+        os_project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
+        os_project_name: "{{ lookup('env', 'OS_TENANT_NAME') }}"
+        password: "{{ lookup('env', 'OS_PASSWORD') }}"
+      auth_type: password
+      gateway_ip: "172.16.0.1"
+      cidr: "172.16.0.0/24"
+      network_name: "external-network"
+      name: "external-subnet"
+      state: present
+      enable_dhcp: "no"
+      allocation_pool_start: "172.16.0.2"
+      allocation_pool_end:  "172.16.0.100"
+  - name: Create access node
+    os_server:
+      name: "access_node"
+      flavor: "s1-4"
+      image: "Ubuntu 18.04"
+      key_name: "os-default-key"
+      nics:
+        - net-name: "Ext-Net"
+        - net-name: "external-network"
+    register: access_node
+
+      
+    

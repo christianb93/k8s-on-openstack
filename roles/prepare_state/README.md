@@ -36,6 +36,7 @@ Role Variables
 The following variables are assumed to be set when calling this role:
 
 * state_dir: the directory where the state is stored.
+* access_node_ip - the public IP of the access node
 
 Dependencies
 ------------
