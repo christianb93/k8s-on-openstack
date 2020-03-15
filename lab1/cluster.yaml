@@ -78,7 +78,7 @@
     cluster_ca_file:  "{{state_dir}}/ca/k8s_ca.crt"
     kubeconfig_dest: "{{state_dir}}/config/controller-manager-kubeconfig"
     cluster_name: "my-cluster"
-    cluster_endpoint: "https://{{hostvars.master.mgmt_ip}}:6443"
+    cluster_endpoint: "https://{{hostvars.master.node_ip}}:6443"
     user_name: system:kube-controller-manager
   roles:
     - kubeconfig
@@ -104,7 +104,7 @@
     cluster_ca_file:  "{{state_dir}}/ca/k8s_ca.crt"
     kubeconfig_dest: "{{state_dir}}/config/scheduler-kubeconfig"
     cluster_name: "my-cluster"
-    cluster_endpoint: "https://{{hostvars.master.mgmt_ip}}:6443"
+    cluster_endpoint: "https://{{hostvars.master.node_ip}}:6443"
     user_name: system:kube-scheduler
   roles:
     - kubeconfig

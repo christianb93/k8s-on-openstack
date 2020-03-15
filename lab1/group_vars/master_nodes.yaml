@@ -44,3 +44,6 @@ scheduler_key: "{{state_dir}}/k8s_certs/scheduler.rsa"
 # The kubeconfig file that the Kubernetes scheduler will use
 # to connect to the API server
 scheduler_kubeconfig: "{{state_dir}}/config/scheduler-kubeconfig"
+# For the CSR signing functionality, the kube controller manager will need access to the
+# RSA key of the root CA certificate
+root_ca_key: "{{state_dir}}/ca/k8s_ca.rsa"
