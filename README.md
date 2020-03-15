@@ -57,7 +57,8 @@ Of course you will need Ansible and Terraform. I used Ansible 2.8.6 (install wit
 To run a full installation, the following steps are needed (assuming that you have cloned this repository and your current working directory is the directory in which this README is located). We also assume that you have copied the service account key created above into this directory as well. First, run the Ansible playbooks that create the base environment in GCE and bring up the OpenStack environment 
 
 ```
-ansible-playbook site.yaml
+ansible-playbook gce/base.yaml
+ansible-playbook gce/os.yaml
 ```
 
 Once this command completes, your OpenStack cluster is up and running, and three instances (which will be our master node and two worker nodes) have been spawned. You should be able to log into each of these instances using
