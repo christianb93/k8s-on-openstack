@@ -77,7 +77,7 @@ subjects:
 kind: Secret
 apiVersion: v1
 metadata:
-  name: os-cloud-config
+  name: octavia-ingress-config
   namespace: kube-system
 type: Opaque  
 stringData: 
@@ -126,7 +126,7 @@ spec:
   volumes:
   - name: cloud-config-volume
     secret:
-      secretName: os-cloud-config
+      secretName: octavia-ingress-config
   - name: os-ca-credentials
     secret:
       secretName: os-client-ca
