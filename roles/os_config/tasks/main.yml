@@ -26,7 +26,7 @@
     auth_type: password
     disk: "10"
     name: m1.medium
-    ram: "2048"
+    ram: "1024"
     vcpus: "1"
     state: present
 - name: Create m1.large flavor (for master nodes)
