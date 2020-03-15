@@ -3,4 +3,4 @@ k8s-on-openstack-sa-key.json
 
 # Terraform state
 .state
-base/.terraform
+gce/.terraform

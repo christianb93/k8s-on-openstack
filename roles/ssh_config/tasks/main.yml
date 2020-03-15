@@ -4,7 +4,7 @@
 
 - name: Cleanup SSH config file
   shell: "echo > ~/.ssh/ansible_created_config"
-  # For each host, we also add an entry to .ssh/ansible_created_config
+# For each host, we also add an entry to .ssh/ansible_created_config
 - name: Add host to SSH config file
   shell: |
     cat >> ~/.ssh/ansible_created_config <<EOF

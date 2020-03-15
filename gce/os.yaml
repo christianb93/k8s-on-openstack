@@ -10,7 +10,7 @@
   hosts: localhost 
   become: no
   vars:
-    terraform_dir: "{{playbook_dir}}/../base/"
+    terraform_dir: "{{playbook_dir}}/../gce/"
     state_dir: "{{playbook_dir}}/../.state"
     gcp_service_account_key: "{{playbook_dir}}/../k8s-on-openstack-sa-key.json"
   roles:
@@ -150,6 +150,7 @@
   hosts: controller_nodes
   become: yes
   vars:
+    mariadb_root_password: "{{MARIADB_ROOT_PASSWORD}}"
     keystone_db_user_password: "{{OS_SERVICE_PASSWORD}}"
     keystone_admin_password: "{{OS_ADMIN_PASSWORD}}"
     glance_db_user_password: "{{OS_SERVICE_PASSWORD}}"
@@ -241,6 +242,7 @@
     keystone_admin_password: "{{OS_ADMIN_PASSWORD}}"
     octavia_db_user_password: "{{OS_SERVICE_PASSWORD}}"    
     octavia_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    mariadb_root_password: "{{MARIADB_ROOT_PASSWORD}}"
   roles:
     - neutron_agents
     - neutron_l3agent

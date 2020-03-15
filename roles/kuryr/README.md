@@ -65,7 +65,7 @@ Also note that at the time of writing, Kuryr needs to be run with an admin user 
 The following variables need to be defined:
 
 * state_dir - the state directory to which we will write our manifest files
-* os.auth - authentication data for OpenStack as defined in config.yaml created during the execution of *os/os.yaml*
+* os.auth - authentication data for OpenStack as defined in config.yaml 
 * os.access_node - information on the install node, from the same file
 * pod_security_group_id - ID of a security group that we will add to each pod
 * external_network_id - ID of the external network on which we create floating IPs for load balancers

@@ -17,7 +17,7 @@ We should see the three OpenStack instances (a master and two worker nodes) and 
 openstack compute service list
 ```
 
-should show you the scheduler and the conductor running on the controller node and a nova-compute service running on each of the compute nodes. If this is not the case, check the output of the Ansible scripts for errors and - if needed -re-run the scripts *base/base.yaml* and *os/os.yaml* separately.
+should show you the scheduler and the conductor running on the controller node and a nova-compute service running on each of the compute nodes. If this is not the case, check the output of the Ansible scripts for errors and - if needed -re-run the scripts *gce/base.yaml* and *gce/os.yaml* separately.
 
 
 # Basic deployments and services

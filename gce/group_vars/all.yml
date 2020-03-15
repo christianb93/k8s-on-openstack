@@ -18,8 +18,6 @@ vm_network_device: ""
 phys_bridge_name: br-phys
 # The interface which we attach to this bridge to provide connectivity
 phys_interface: br-ext
-# The password for the MariaDB root user
-mariadb_root_password: "{{MARIADB_ROOT_PASSWORD}}"
 # Node setup
 api_node: controller
 db_node: controller

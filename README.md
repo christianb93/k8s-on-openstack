@@ -11,8 +11,7 @@ This repository contains the following directories:
 * roles - all Ansible roles that we need
 * group_vars - groups variables that we need
 * .state - this directory contains all state, like the Terraform state, credentials, certificates and other configuration information. This directory is not part of the repository, but will be created when the scripts are run
-* base - this directory contains the scripts for the base platform, i.e. the Terraform templates for the GCE environment and Ansible scripts to prepare the state
-* os - here we place the Ansible scripts to install OpenStack - taken from my blog [leftasexercise.com](https://leftasexercise.com/2020/01/20/q-running-your-own-cloud-with-openstack-overview/). This script also creates an external network and a m1.nano flavors for later tests
+* gce - this directory contains the scripts for the base platform, i.e. the Terraform templates for the GCE environment, Ansible scripts to prepare the state and the Ansible scripts to install OpenStack - taken from my blog [leftasexercise.com](https://leftasexercise.com/2020/01/20/q-running-your-own-cloud-with-openstack-overview/). This script also creates an external network and a m1.nano flavors for later tests
 * nodes - this directory contains scripts needed to bring up our OpenStack nodes on which we will then install Kubernetes
 * cluster - the final scripts for the Kubernetes cluster
 * labxxx - one directory for each lab
@@ -92,7 +91,7 @@ openstack server list
 Some test scenarios can be found in the tests directory. Once you are done, you might want to destroy all resources again. For that purpose, run
 
 ```
-cd base
+cd gce
 terraform destroy -auto-approve
 ```
 
@@ -127,6 +126,6 @@ To reduce charges, it is advisable to stop all GCP instances when the environmen
 
 In case the Terraform state is broken, you can also delete all resources in GCP manually by running `tools/gcloud_delete` from a Google cloud shell  - use this with care!
 
-Also note that the Terraform script adds ingress firewall rules to allow traffic from your **current** IP address. If this changes, for instance because your provider disconnects you at some point at night and reconnects, you will have to run `(cd base ; terraform apply -auto-approve)` to refresh the firewall rules.
+Also note that the Terraform script adds ingress firewall rules to allow traffic from your **current** IP address. If this changes, for instance because your provider disconnects you at some point at night and reconnects, you will have to run `(cd gce ; terraform apply -auto-approve)` to refresh the firewall rules.
 
 
