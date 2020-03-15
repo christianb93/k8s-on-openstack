@@ -41,7 +41,7 @@
     auth_type: password
     disk: "20"
     name: m1.large
-    ram: "4096"
+    ram: "2048"
     vcpus: "2"
     state: present
 - name: Create external, flat network (shared, owned by admin)
