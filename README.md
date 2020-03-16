@@ -12,6 +12,7 @@ This repository contains the following directories:
 * group_vars - groups variables that we need
 * .state - this directory contains all state, like the Terraform state, credentials, certificates and other configuration information. This directory is not part of the repository, but will be created when the scripts are run
 * gce - this directory contains the scripts for the base platform, i.e. the Terraform templates for the GCE environment, Ansible scripts to prepare the state and the Ansible scripts to install OpenStack - taken from my blog [leftasexercise.com](https://leftasexercise.com/2020/01/20/q-running-your-own-cloud-with-openstack-overview/). This script also creates an external network and a m1.nano flavors for later tests
+* local - a directory used to bring up a local environment (see below)
 * nodes - this directory contains scripts needed to bring up our OpenStack nodes on which we will then install Kubernetes
 * cluster - the final scripts for the Kubernetes cluster
 * labxxx - one directory for each lab
@@ -128,5 +129,59 @@ To reduce charges, it is advisable to stop all GCP instances when the environmen
 In case the Terraform state is broken, you can also delete all resources in GCP manually by running `tools/gcloud_delete` from a Google cloud shell  - use this with care!
 
 Also note that the Terraform script adds ingress firewall rules to allow traffic from your **current** IP address. If this changes, for instance because your provider disconnects you at some point at night and reconnects, you will have to run `(cd gce ; terraform apply -auto-approve)` to refresh the firewall rules.
+
+
+# Running a local environment
+
+If you have a machine with sufficient memory (at least 32 GB), you can also run the environment locally using Vagrant and VirtualBox. To do this, first run the following commands to bring up virtual machines, create an inventory and install OpenStack on the virtual machines. In contrast to previous labs where I used Vagrant and VirtualBox, this setup uses KVM as VirtualBox does not offer nested virtualization on Intel CPUs.
+
+To run this example, there are a few one-time setup steps needed. First, we of course need to install KVM and the libvirt library. 
+
+```
+sudo apt-get update && sudo apt-get install libvirt-daemon libvirt-clients libvirt-manager
+sudo adduser $(id -un) libvirt
+sudo adduser $(id -un) kvm
+# Log in again to get new group assigment
+su -l $(id -un)
+```
+
+Next, we need to create three networks using the `virsh` virtual machine manager. 
+
+```
+virsh net-define management-network.xml 
+virsh net-start management
+virsh net-define underlay-network.xml
+virsh net-start underlay
+```
+The next commands install the [libvirt Vagrant plugin](https://github.com/vagrant-libvirt/vagrant-libvirt) which allows us to define and run KVM based virtual machines using Vagrant files, download and resize a base box, and download images for the nodes and the Octavia amphora (in the GCE setup, we download these files directly to the nodes where we need them, in our local setup, it is more efficient to download them once and to map them into the virtual machine).
+
+```
+vagrant plugin install vagrant-libvirt
+sudo tools/prepareUbuntuBionicBox.sh
+(cd local ; wget https://s3.eu-central-1.amazonaws.com/cloud.leftasexercise.com/amphora-x64-haproxy.qcow2)
+(cd local ; wget http://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img)
+```
+
+With this, our one-time setup is complete. To create and prepare our OpenStack environment, now simply execute
+
+```
+ansible-playbook local/up.yaml
+ansible-playbook -i local/hosts.ini local/base.yaml
+ansible-playbook -i local/hosts.ini local/os.yaml
+```
+
+Once these commands complete, you can now proceed to bring up the cluster and Kubernetes as usual, for instance using
+
+```
+ansible-playbook nodes/nodes.yaml
+ansible-playbook -i .state/config/cluster.yaml cluster/cluster.yaml
+```
+
+Note that, as this configuration currently still uses the same state directory as the GCE based configuration, it should not be run in the same tree as the GCE based configuration. 
+
+
+
+
+
 
 
