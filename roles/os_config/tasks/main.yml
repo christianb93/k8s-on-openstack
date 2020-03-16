@@ -24,7 +24,7 @@
       os_project_name: "admin"
       password: "{{OS_ADMIN_PASSWORD}}"
     auth_type: password
-    disk: "10"
+    disk: "6"
     name: m1.medium
     ram: "1024"
     vcpus: "1"
@@ -39,7 +39,7 @@
       os_project_name: "admin"
       password: "{{OS_ADMIN_PASSWORD}}"
     auth_type: password
-    disk: "20"
+    disk: "10"
     name: m1.large
     ram: "2048"
     vcpus: "2"
