@@ -1,0 +1,71 @@
+
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+#
+# Use virsh net-list and virsh netdump-xml to get the configuration
+# of the existing networks
+#
+
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'libvirt'
+
+Vagrant.configure("2") do |config|
+
+  config.vm.define "controller" do |controller|
+    controller.vm.hostname = "controller"
+    controller.vm.box = "generic/ubuntu1804"
+    controller.vm.network :private_network,
+      :ip => "192.168.101.11",
+      :libvirt__network_name => "management"
+    config.vm.provider :libvirt do |v|
+      v.memory = 4096
+      v.cpus = 2
+    end
+  end
+
+  config.vm.define "network" do |network|
+    network.vm.hostname = "network"
+    network.vm.box = "generic/ubuntu1804"
+    network.vm.network :private_network,
+      :ip => "192.168.101.12",
+      :libvirt__network_name => "management"
+    network.vm.network :private_network,
+      :ip => "192.168.102.12",
+      :libvirt__network_name => "underlay"
+    network.vm.provider :libvirt do |v|
+      v.memory = 4096
+      v.cpus = 2
+    end
+  end
+
+
+  config.vm.define "compute1" do |compute1|
+    compute1.vm.hostname = "compute1"
+    compute1.vm.box = "generic/ubuntu1804"
+    compute1.vm.network :private_network,
+      :ip => "192.168.101.21",
+      :libvirt__network_name => "management"
+    compute1.vm.network :private_network,
+      :ip => "192.168.102.21",
+      :libvirt__network_name => "underlay"
+    compute1.vm.provider :libvirt do |v|
+      v.memory = 8192
+      v.cpus = 4
+    end
+  end
+
+config.vm.define "storage" do |storage|
+    storage.vm.hostname = "storage"
+    storage.vm.box = "generic/ubuntu1804"
+    storage.vm.network :private_network,
+      :ip => "192.168.101.31",
+      :libvirt__network_name => "management"
+    storage.vm.provider :libvirt do |v|
+      v.memory = 1024
+      v.cpus = 1
+      v.storage :file, :size => '5G', :type => 'raw', :device => 'sdc', :bus => 'scsi'
+    end
+  end
+
+
+end

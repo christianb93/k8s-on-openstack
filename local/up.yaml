@@ -1,0 +1,34 @@
+---
+#
+# Make sure that vagrant is up and create the inventory
+#
+
+- name: Create machines and determine IP addresses
+  hosts: localhost
+  become: no 
+  tasks: 
+  - name: Run Vagrant 
+    shell: |
+      vagrant up
+  - name: Get public IP addresses 
+    shell: |
+      virsh domifaddr local_{{item}} | grep "ipv4" | awk '{ print $4 }' | sed 's/\/24//'
+    loop: 
+      - controller 
+      - network
+      - compute1
+      - storage
+    register: 
+      ip_addresses 
+
+    
+
+- name: Create inventory file 
+  hosts: localhost
+  become: no
+  tasks:
+  - name: Run templating
+    template:
+      dest: "{{playbook_dir}}/hosts.ini"
+      src: "{{playbook_dir}}/hosts.ini.j2"
+      

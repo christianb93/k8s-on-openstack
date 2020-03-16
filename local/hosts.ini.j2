@@ -1,0 +1,25 @@
+[controller_nodes]
+{% set ssh_ip = ( ip_addresses.results | selectattr("item", "equalto", "controller") | map(attribute='stdout') | list)[0] %}
+controller mgmt_ip=192.168.101.11 ansible_host={{ ssh_ip }} ansible_port=22  ansible_ssh_private_key_file=".vagrant/machines/controller/virtualbox/private_key"
+
+[compute_nodes]
+{% set ssh_ip = ( ip_addresses.results | selectattr("item", "equalto", "compute1") | map(attribute='stdout') | list)[0] %}
+compute1 mgmt_ip=192.168.101.21 underlay_ip=192.168.102.21 ansible_host={{ssh_ip}} ansible_port=22  ansible_ssh_private_key_file=".vagrant/machines/compute1/virtualbox/private_key"
+
+[network_nodes]
+{% set ssh_ip = ( ip_addresses.results | selectattr("item", "equalto", "network") | map(attribute='stdout') | list)[0] %}
+network mgmt_ip=192.168.101.12 underlay_ip=192.168.102.12 ansible_host={{ ssh_ip }} ansible_port=22  ansible_ssh_private_key_file=".vagrant/machines/network/virtualbox/private_key"
+
+[access_nodes]
+{% set ssh_ip = ( ip_addresses.results | selectattr("item", "equalto", "network") | map(attribute='stdout') | list)[0] %}
+network mgmt_ip=192.168.101.12 underlay_ip=192.168.102.12 ansible_host={{ ssh_ip }} ansible_port=22  ansible_ssh_private_key_file=".vagrant/machines/network/virtualbox/private_key"
+
+[storage_nodes]
+{% set ssh_ip = ( ip_addresses.results | selectattr("item", "equalto", "storage") | map(attribute='stdout') | list)[0] %}
+network mgmt_ip=192.168.101.31 ansible_host={{ ssh_ip }} ansible_port=22  ansible_ssh_private_key_file=".vagrant/machines/storage/virtualbox/private_key"
+
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+host_key_checking=false
+ansible_ssh_user=vagrant

@@ -1,0 +1,45 @@
+---
+# 
+# Bring up the base environment and prepare the state 
+# that we will need for later scripts
+#
+
+- name: Prepare local state
+  hosts: localhost 
+  become: no
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+  tasks:
+    - name: Make sure that state directory and all required subdirectories exist 
+      file:
+        path: "{{playbook_dir}}/../{{item}}"
+        state: directory
+      loop:
+        - .state
+        - .state/ssh 
+        - .state/tf 
+        - .state/ca
+        - .state/credentials
+        - .state/os_certs
+        - .state/config
+        - .state/k8s_certs
+  
+- name: Build SSH configuration
+  hosts: localhost
+  become: no
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+  roles:
+  - ssh_config
+
+- name: Prepare state 
+  hosts: localhost
+  become: no 
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+    # We use the management IP of the network host as the access IP
+    # as in our case, this is reachable from the lab host
+    access_node_ip: "{{hostvars.network.mgmt_ip}}"
+  roles:
+    - prepare_state
+
