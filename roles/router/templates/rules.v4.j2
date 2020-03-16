@@ -44,6 +44,13 @@ COMMIT
 -A INPUT -i {{public_interface}} -j DROP
 -A INPUT -i br-ext -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -i br-ext -p icmp -j ACCEPT
+{% if allow_known_ports_locally %}
+    {% if os_known_ports is not none %}
+        {% for port in os_known_ports %}
+-A INPUT -i br-ext -p tcp --destination-port {{port}} -j ACCEPT
+        {% endfor %}
+    {% endif %}
+{% endif %}
 -A INPUT -i br-ext -j DROP
 COMMIT
 

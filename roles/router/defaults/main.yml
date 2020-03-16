@@ -3,3 +3,6 @@
 internal_interface_mtu: 1450
 # Additional known ports to allow
 os_known_ports: 
+# If we set this to true, we also allow the known ports
+# via the INPUT chain
+allow_known_ports_locally: false

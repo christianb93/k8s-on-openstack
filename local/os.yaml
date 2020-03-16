@@ -58,6 +58,7 @@
     patch_port_local_name: "patch-{{phys_bridge_name}}"
     patch_port_peer_name: "patch-{{phys_interface}}"
     vxlan_nodes: "{{ groups.compute_nodes  | map('extract', hostvars, 'underlay_ip') | list}}"
+    allow_known_ports_locally: true
     vxlan_id: 100
     public_interface: "{{router_public_interface}}"
     internal_interface: "{{phys_interface}}"
