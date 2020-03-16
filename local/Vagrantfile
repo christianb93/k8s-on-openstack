@@ -18,6 +18,7 @@ Vagrant.configure("2") do |config|
       :ip => "192.168.101.11",
       :libvirt__network_name => "management"
     config.vm.provider :libvirt do |v|
+      v.machine_virtual_size = 60
       v.memory = 4096
       v.cpus = 2
     end
@@ -34,6 +35,7 @@ Vagrant.configure("2") do |config|
       :ip => "192.168.102.12",
       :libvirt__network_name => "underlay"
     network.vm.provider :libvirt do |v|
+      v.machine_virtual_size = 60
       v.memory = 4096
       v.cpus = 2
     end
@@ -50,6 +52,7 @@ Vagrant.configure("2") do |config|
       :ip => "192.168.102.21",
       :libvirt__network_name => "underlay"
     compute1.vm.provider :libvirt do |v|
+      v.machine_virtual_size = 60
       v.memory = 8192
       v.cpus = 4
     end
@@ -62,6 +65,7 @@ config.vm.define "storage" do |storage|
       :ip => "192.168.101.31",
       :libvirt__network_name => "management"
     storage.vm.provider :libvirt do |v|
+      v.machine_virtual_size = 60
       v.memory = 1024
       v.cpus = 1
       v.storage :file, :size => '5G', :type => 'raw', :bus => 'scsi'
