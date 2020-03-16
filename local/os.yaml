@@ -1,0 +1,256 @@
+---
+# 
+# Install OpenStack
+#
+
+
+- name: Wait for all machines to become ready
+  hosts: all
+  gather_facts: no
+  tasks:
+  - name: Wait for machine to become reachable
+    wait_for_connection:
+      delay: 2
+      sleep: 10
+
+
+# Set up a proxy on the network node to 
+# provide a public API and Horizon endpoint
+- name: Set up proxy on network node
+  hosts: network_nodes
+  become: yes
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+    os_known_ports: ['5000', '8774', '8776', '8778', '9696', '9292', '9876']
+    proxy_api_server: "no"
+  roles: 
+  - proxy
+
+ 
+#
+# Import OpenStack credentials and run basic setup steps
+# on all nodes
+#
+- name: Basic node setup
+  hosts: all
+  gather_facts: no
+  become: yes
+  pre_tasks:
+    - name: Read credentials
+      include_vars:
+        file: "{{state_dir}}/credentials/credentials.yaml"
+  roles:
+    - node_setup
+  
+
+# The next two plays set up our VXLAN network that we will 
+# present to OpenStack Neutron as a physical provider network
+# The network will act as a virtual bridge, the compute nodes
+# will attach to this bridge. Finally, we set up the network node
+# so that it acts as a router between this network and the 
+# actual physical network
+
+- name: Do wiring and routing on network nodes
+  hosts: network_nodes
+  become: yes
+  vars:
+    bridge_name: "{{phys_interface}}"
+    patch_port_local_name: "patch-{{phys_bridge_name}}"
+    patch_port_peer_name: "patch-{{phys_interface}}"
+    vxlan_nodes: "{{ groups.compute_nodes  | map('extract', hostvars, 'underlay_ip') | list}}"
+    vxlan_id: 100
+    public_interface: "{{router_public_interface}}"
+    internal_interface: "{{phys_interface}}"
+    internal_ip_address: "172.16.0.1/24"
+    internal_interface_mtu: 1450
+    # We open a few additional ports that we need to connect to the API, including
+    # port 6080 for the VNC proxy
+    os_known_ports: ['5000', '8774', '8776', '8778', '9696', '9292', '9876','443', '6080', '6443']
+  roles:
+    - vxlan_bridge
+    - router 
+
+- name: Create and wire up br-ext on compute nodes
+  hosts: compute_nodes
+  become: yes
+  vars:
+    bridge_name: "{{phys_interface}}"
+    patch_port_local_name: "patch-{{phys_bridge_name}}"
+    patch_port_peer_name: "patch-{{phys_interface}}"
+    vxlan_peer: "{{hostvars.network.underlay_ip}}"
+    vxlan_id: 100
+  roles:
+    - vxlan_node
+
+
+
+#
+# Set up the controller node as NTP server and install MariaDB, Memcached and RabbitMQ
+#
+- name: Install NTP on controller node
+  hosts: controller_nodes
+  become: yes
+  vars:
+    ntp_network_cidr: "{{management_network_cidr}}"
+    mariadb_server_ip: "{{hostvars[db_node].mgmt_ip}}"
+    mariadb_root_password: "{{MARIADB_ROOT_PASSWORD}}"
+    rabbit_user_name: "openstack"
+    rabbit_user_password: "{{OS_SERVICE_PASSWORD}}"
+    memcached_server_ip: "{{hostvars[memcached_node].mgmt_ip}}"
+  roles:
+    - ntp_server
+    - maria_db
+    - rabbit
+    - memcached
+
+
+#
+# Set up the compute nodes, network nodes and storage nodes as NTP clients
+#
+- name: Install NTP client on other nodes nodes
+  hosts: compute_nodes, network_nodes, storage_nodes
+  become: yes
+  roles:
+    - ntp_client
+
+
+###########################################################################################
+# We are now ready to install the OpenStack components on controller node, network node,
+# storage nodes and compute nodes
+###########################################################################################
+  
+#
+# Install the OpenStack main control plane components on the controller node
+#
+- name: Install OpenStack control plane components 
+  hosts: controller_nodes
+  become: yes
+  vars:
+    mariadb_root_password: "{{MARIADB_ROOT_PASSWORD}}"
+    keystone_db_user_password: "{{OS_SERVICE_PASSWORD}}"
+    keystone_admin_password: "{{OS_ADMIN_PASSWORD}}"
+    glance_db_user_password: "{{OS_SERVICE_PASSWORD}}"
+    glance_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    placement_db_user_password: "{{OS_SERVICE_PASSWORD}}"
+    placement_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    cinder_db_user_password: "{{OS_SERVICE_PASSWORD}}"
+    cinder_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    rabbitmq_password: "{{OS_SERVICE_PASSWORD}}"
+    neutron_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    nova_db_user_password: "{{OS_SERVICE_PASSWORD}}"
+    nova_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    metadata_shared_secret: "{{OS_SHARED_SECRET}}"
+    cinder_os_region_name: "RegionOne"    
+    octavia_db_user_password: "{{OS_SERVICE_PASSWORD}}"
+    octavia_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    neutron_db_user_password: "{{OS_SERVICE_PASSWORD}}"
+    horizon_physical_networks: "['physnet']"
+    horizon_supported_network_types: "['flat', 'vxlan']"
+    horizon_enable_router: True
+  roles:
+    - keystone
+    - glance
+    - placement
+    - cinder_server
+    - nova 
+    - neutron_server
+    - octavia_api
+    - horizon
+
+#
+# Install Cinder volume manager on the storage nodes
+#
+- name: Install Cinder on storage nodes
+  hosts: storage_nodes
+  become: yes
+  vars:
+    cinder_db_user_password: "{{OS_SERVICE_PASSWORD}}"
+    cinder_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    rabbitmq_password: "{{OS_SERVICE_PASSWORD}}"
+  roles:
+    - cinder_node
+
+
+#
+# Install Nova and Neutron agents on the compute nodes
+#
+- name: Install Nova on compute nodes
+  hosts: compute_nodes
+  become: yes
+  vars:
+    neutron_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    rabbitmq_password: "{{OS_SERVICE_PASSWORD}}"
+    keystone_admin_password: "{{OS_ADMIN_PASSWORD}}"
+    nova_db_user_password: "{{OS_SERVICE_PASSWORD}}"
+    nova_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    placement_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+  roles:
+    - nova_compute
+    - neutron_compute
+
+
+#
+# Now make sure that the Nova server knows about our
+# compute nodes
+#
+- name: Discover compute hosts
+  hosts: controller_nodes
+  become: yes
+  become_user: nova
+  tasks:
+    - name: Discover compute hosts
+      shell:
+        nova-manage cell_v2 discover_hosts
+
+#
+# All Neutron agents (DHCP,Metadata) will run on the
+# network node, as well as the Octavia control plane
+#
+- name: Install Neutron agents on network node
+  hosts: network_nodes
+  become: yes
+  vars:
+    metadata_shared_secret: "{{OS_SHARED_SECRET}}"
+    rabbitmq_password: "{{OS_SERVICE_PASSWORD}}"
+    neutron_db_user_password: "{{OS_SERVICE_PASSWORD}}"
+    neutron_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    nova_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"    
+    keystone_admin_password: "{{OS_ADMIN_PASSWORD}}"
+    octavia_db_user_password: "{{OS_SERVICE_PASSWORD}}"    
+    octavia_keystone_user_password: "{{OS_SERVICE_PASSWORD}}"
+    mariadb_root_password: "{{MARIADB_ROOT_PASSWORD}}"
+  roles:
+    - neutron_agents
+    - neutron_l3agent
+    - octavia_controlplane
+
+#
+# Run some basic configuration steps (create flavors and external network)
+# 
+- name: Run basic configuration of our new environment
+  hosts: network 
+  become: no
+  vars:
+    access_node_ip: "{{hostvars.network.mgmt_ip}}"
+    access_node_user: "{{install_user}}"
+    access_node_ssh_key: "{{hostvars.network.ansible_ssh_private_key_file}}"
+  roles:
+    - os_config
+
+#
+# Print completion message and usage instructions
+#
+- name: Print completion message and usage instructions
+  hosts: localhost
+  tasks:
+    - name: Read credentials 
+      include_vars:
+        file: "{{playbook_dir}}/../.state/credentials/credentials.yaml"
+    - name: Print completion
+      debug:
+        msg: 
+          - Done. To connect to the Horizon dashboard, point your browser to 
+          - https://{{hostvars.network.ansible_ssh_host}}/horizon 
+          - and ignore certificate errors (or import {{playbook_dir}}/../.state/ca/nginx.crt into your browser). 
+          - The password for the admin user is
+          - "{{OS_ADMIN_PASSWORD}}"    

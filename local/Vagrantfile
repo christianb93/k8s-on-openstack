@@ -26,6 +26,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "network" do |network|
     network.vm.hostname = "network"
     network.vm.box = "generic/ubuntu1804"
+    network.vm.synced_folder './', '/vagrant'
     network.vm.network :private_network,
       :ip => "192.168.101.12",
       :libvirt__network_name => "management"
@@ -63,7 +64,7 @@ config.vm.define "storage" do |storage|
     storage.vm.provider :libvirt do |v|
       v.memory = 1024
       v.cpus = 1
-      v.storage :file, :size => '5G', :type => 'raw', :device => 'sdc', :bus => 'scsi'
+      v.storage :file, :size => '5G', :type => 'raw', :bus => 'scsi'
     end
   end
 
