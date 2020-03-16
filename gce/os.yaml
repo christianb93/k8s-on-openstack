@@ -253,6 +253,10 @@
 # 
 - name: Run basic configuration of our new environment
   hosts: network 
+  vars:
+    access_node_ip: "{{hostvars.network.ansible_ssh_host}}"
+    access_node_user: "{{install_user}}"
+    access_node_ssh_key: "{{hostvars.network.ansible_ssh_private_key_file}}"
   become: no
   roles:
     - os_config

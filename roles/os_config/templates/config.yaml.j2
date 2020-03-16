@@ -3,9 +3,9 @@ os:
     # Kubernetes installation and which we will use to access our Kubernetes API from the 
     # public internet later on
     access_node:
-        ip: {{hostvars.network.ansible_ssh_host}}
-        user: stack
-        ssh_key: {{state_dir}}/ssh/gcp-stack-key 
+        ip: {{access_node_ip}}
+        user: {{access_node_user}}
+        ssh_key: {{access_node_ssh_key}}
     #
     # We will need to configure a proxy to be able to reach the Kubernetes API from outside
     # If (as it is the case in our standard GCE install), there is an NGINX on the install node 
@@ -39,7 +39,7 @@ os:
     # The auth.auth_url needs to be reachable from the access_node, the 
     # public auth_url is supposed to be reachable from the public internet
     #
-    public_auth_url: https://{{hostvars.network.ansible_ssh_host}}:5000/v3
+    public_auth_url: https://{{access_node_ip}}:5000/v3
     auth:
         auth_url: http://controller:5000/v3
         username: k8s
