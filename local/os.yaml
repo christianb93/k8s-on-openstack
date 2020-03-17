@@ -251,7 +251,7 @@
       debug:
         msg: 
           - Done. To connect to the Horizon dashboard, point your browser to 
-          - https://{{hostvars.network.ansible_ssh_host}}/horizon 
+          - https://{{hostvars.network.mgmt_ip}}/horizon 
           - and ignore certificate errors (or import {{playbook_dir}}/../.state/ca/nginx.crt into your browser). 
           - The password for the admin user is
           - "{{OS_ADMIN_PASSWORD}}"    
