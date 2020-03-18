@@ -6,7 +6,7 @@
 # Determine directories that we need
 #
 scriptdir=$( cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-statedir=$scriptdir/../.state
+statedir=$scriptdir/../../.state
 
 #
 # Get credentials
@@ -32,7 +32,7 @@ function wait_for_deployment {
 #
 # Create deployment
 #
-kubectl apply -f $scriptdir/test7.yaml
+kubectl apply -f $scriptdir/ingress.yaml
 #
 # and wait for pods to come up
 #

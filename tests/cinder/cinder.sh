@@ -6,7 +6,7 @@
 # Determine directories that we need
 #
 scriptdir=$( cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-statedir=$scriptdir/../.state
+statedir=$scriptdir/../../.state
 
 #
 # Get credentials
@@ -37,7 +37,7 @@ done
 #
 # Now create a PVC
 #
-kubectl apply -f $scriptdir/test6.yaml
+kubectl apply -f $scriptdir/cinder.yaml
 #
 # and wait until the PVC becomes visible
 #

@@ -25,7 +25,7 @@ should show you the scheduler and the conductor running on the controller node a
 Now let us create our first deployment, which will bring up two NGINX instances.
 
 ```
-kubectl apply -f tests/test1.yaml
+kubectl apply -f tests/nginx/nginx.yaml
 count=0
 while [ $count != "2" ]; do
   sleep 2;
@@ -115,14 +115,14 @@ you should see that
 Now it is time to try out the load balancer integration. For that purpose, use the following command to spawn a service with two NGINX instances behind it.
 
 ```
-kubectl apply -f tests/test2.yaml
+kubectl apply -f tests/loadbalancer/loadbalancer.yaml
 ```
 
 Now run repeatedly
 
 ```
 openstack loadbalancer list
-kubectl get service nginx-loadbalancer-service
+kubectl get service test3-service
 ```
 After typically a bit less than a minute, the load balancer should be displayed in the ACTIVE state, and an external IP should appear on the service. When you run
 
@@ -135,27 +135,21 @@ and compare the output to the data displayed about the loadbalancer, you should 
 Of course this IP is not reachable from our lab host, but from the network host. One way to test this is therefore to execute a curl on the network host via SSH.
 
 ```
-vip=$(kubectl get service nginx-loadbalancer-service \
+vip=$(kubectl get service test3-service \
    -o json \
     | jq -r \
     ".status.loadBalancer.ingress[0].ip")
-ssh network "curl $vip"
+ssh network "curl -s $vip"
 ```    
 
-You should now see the HTML source code of a typical NGINX welcome page. Alternatively, you can set up an SSH port forward
-
-```
-ssh -L 8888:$vip:80 -N network
-```
-
-and then point your browser to 127.0.0.1:8888 to see this page. Finally, you can delete the service again and should see the load balancer disappear.
+You should now see the output of our test server, which is simply the pod name. Subseqent requests should show different outputs, showing that the load balancing works. Finally, you can delete the service again and should see the load balancer disappear. 
 
 # Testing Kuryr
 
 Once the Kuryr controller and daemon are installed, we should see that all worker nodes move into the "Ready" status, indicating that the CNI configuration has successfully been validated by the Kubelet. To verify operations of the Kuryr controller, run 
 
 ```
-./tests/test4.sh
+./tests/kuryr/kuryr.sh
 ```
 
 This script will create four pods, each running a server process on port 8888, and try to ping each from from every other pod as well as a known IP address outside the cluster (8.8.8.8) from every pod. It will also test connectivity between pods, accessing a service IP, reaching an external IP and reaching the Kubernetes API endpoint.
@@ -207,7 +201,7 @@ done
 Next, let us verify that the volume provisioning works. Once we have created a storage class and the CSI controller plugin is running, we can create a PVC and a pod consuming it and should see that it has been attached.
 
 ```
-kubectl apply -f tests/test6.yaml
+kubectl apply -f tests/cinder/cinder.yaml
 kubectl get pods
 # Wait until pod is ready
 openstack volume list
