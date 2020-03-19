@@ -135,25 +135,17 @@ Also note that the Terraform script adds ingress firewall rules to allow traffic
 
 If you have a machine with sufficient memory (at least 32 GB), you can also run the environment locally using Vagrant and VirtualBox. To do this, first run the following commands to bring up virtual machines, create an inventory and install OpenStack on the virtual machines. In contrast to previous labs where I used Vagrant and VirtualBox, this setup uses KVM as VirtualBox does not offer nested virtualization on Intel CPUs.
 
-To run this example, there are a few one-time setup steps needed. First, we of course need to install KVM and the libvirt library. 
+To run this example, there are a few one-time setup steps needed. First, we of course need to install KVM and the libvirt library. We also install the libvirt Python package which is required by Ansible's virt_net module.
 
 ```
-sudo apt-get update && sudo apt-get install libvirt-daemon libvirt-clients libvirt-manager
+sudo apt-get update && sudo apt-get install libvirt-daemon libvirt-clients libvirt-manager python3-libvirt
 sudo adduser $(id -un) libvirt
 sudo adduser $(id -un) kvm
 # Log in again to get new group assigment
 su -l $(id -un)
 ```
 
-Next, we need to create three networks using the `virsh` virtual machine manager. 
-
-```
-virsh net-define management-network.xml 
-virsh net-start management
-virsh net-define underlay-network.xml
-virsh net-start underlay
-```
-The next commands install the [libvirt Vagrant plugin](https://github.com/vagrant-libvirt/vagrant-libvirt) which allows us to define and run KVM based virtual machines using Vagrant files, download and resize a base box, and download images for the nodes and the Octavia amphora (in the GCE setup, we download these files directly to the nodes where we need them, in our local setup, it is more efficient to download them once and to map them into the virtual machine).
+The next commands install the [libvirt Vagrant plugin](https://github.com/vagrant-libvirt/vagrant-libvirt) which allows us to define and run KVM based virtual machines using Vagrant files, download and resize a base box, and download images for the nodes and the Octavia amphora (in the GCE setup, we download these files directly to the nodes where we need them, in our local setup, it is more efficient to download them once and to map them into the virtual machine). 
 
 ```
 vagrant plugin install vagrant-libvirt

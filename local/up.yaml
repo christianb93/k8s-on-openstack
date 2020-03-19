@@ -7,6 +7,14 @@
   hosts: localhost
   become: no 
   tasks: 
+  - name: Make sure that networks are defined and up
+    virt_net:
+      name: "{{item}}"
+      xml: '{{ lookup("file", "{{item}}-network.xml") }}'
+      state: active
+    loop:
+    - management
+    - underlay
   - name: Run Vagrant 
     shell: |
       vagrant up
