@@ -14,6 +14,13 @@
     dest: /etc/memcached.conf
   register:
     memcached_conf
+- name: Set RestartSec in systemd unit file
+  lineinfile:
+    path: /lib/systemd/system/memcached.service
+    regexp: ".*RestartSec=.*"
+    line: "RestartSec=5"
+    insertafter: "Restart=.*"
+    state: present
 - name: Restart memcached if needed
   service:
     name: memcached

@@ -10,6 +10,18 @@
     state: latest 
     policy_rc_d: 101
 
+#
+# The systemd unit definition that comes with Ubuntu Bionic
+# has the RestartSec commented out. Change this to avoid the
+# "too many restarts" issue
+#
+- name: Set RestartSec in systemd unit file
+  lineinfile:
+    path: /lib/systemd/system/etcd.service
+    regexp: ".*RestartSec=.*"
+    line: "RestartSec=5"
+    insertafter: "Restart=.*"
+    state: present
 
 - name: Make sure that /etc/kubernetes/pki exists 
   file: 
