@@ -1,0 +1,6 @@
+---
+#
+# Whether we ask the API server to use a webhook
+#
+use_authentication_webhook: false 
+authentication_webhook_config_file: ""

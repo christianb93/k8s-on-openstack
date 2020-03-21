@@ -22,8 +22,10 @@ ExecStart=/usr/local/bin/kube-apiserver \
    --proxy-client-key-file /etc/kubernetes/pki/front_proxy_client.rsa \
    --requestheader-client-ca-file /etc/kubernetes/pki/proxy_ca.crt \
    --service-cluster-ip-range {{service_cidr}} \
-   --allow-privileged=true \
-   --enable-bootstrap-token-auth 
+{% if use_authentication_webhook %}
+   --authentication-token-webhook-config-file={{authentication_webhook_config_file}}
+{% endif %}
+   --allow-privileged=true 
 Restart=always
 StartLimitInterval=0
 RestartSec=10
