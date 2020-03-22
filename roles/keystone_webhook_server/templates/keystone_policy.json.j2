@@ -1,0 +1,20 @@
+[
+    {
+        "users": {
+            "roles": ["admin"],
+            "projects": ["k8s"]
+        },
+        "resource_permissions": {
+            "*/*": ["*"]
+        }
+    },
+    {
+        "users": {
+            "roles": ["reader"],
+            "projects": ["k8s"]
+        },
+        "resource_permissions": {
+            "*/*": ["get", "list", "watch"]
+        }
+    }
+]

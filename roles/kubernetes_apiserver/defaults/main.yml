@@ -4,3 +4,8 @@
 #
 use_authentication_webhook: false 
 authentication_webhook_config_file: ""
+#
+# The same for authorization
+#
+use_authorization_webhook: false 
+authorization_webhook_config_file: ""

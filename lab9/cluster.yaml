@@ -52,6 +52,8 @@
     kube_apiserver_binary_url: https://storage.googleapis.com/leftasexercise.com/kube-binaries/kube-apiserver
     authentication_webhook_config_file: "/etc/kubernetes/conf/webhook.conf"
     use_authentication_webhook: true
+    authorization_webhook_config_file: "/etc/kubernetes/conf/webhook.conf"
+    use_authorization_webhook: true
   roles:
     - kubernetes_apiserver
 

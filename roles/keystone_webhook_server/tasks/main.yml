@@ -22,6 +22,19 @@
     mode: 0711
     dest: "/usr/local/bin/k8s-keystone-auth"
 
+- name: Make sure that /etc/kubernetes/conf exists
+  file:
+    path: "/etc/kubernetes/conf"
+    state: directory
+
+- name: Create policy file
+  template:
+    src: keystone_policy.json.j2
+    dest: "/etc/kubernetes/conf/keystone_policy.json"
+    owner: root
+    group: root
+    mode: 0644
+
 - name: Generate systemd unit file for webhook server 
   template: 
     src: k8s-keystone-auth.service.j2
@@ -36,10 +49,6 @@
     enabled: yes
     state: restarted
 
-- name: Make sure that /etc/kubernetes/conf exists
-  file:
-    path: "/etc/kubernetes/conf"
-    state: directory
 
 - name: Create webhook configuration file for Kube API server
   template:
