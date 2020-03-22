@@ -15,5 +15,13 @@ preferences: {}
 users:
 - name: {{user_name}}
   user:
+{% if create_tls_identity %}
     client-certificate-data: {{client_cert_data}}
     client-key-data: {{client_key_data}}
+{% endif %}
+{% if create_exec_identity %}
+    exec:
+      command: "client-keystone-auth"
+      apiVersion: "client.authentication.k8s.io/v1beta1"
+{%endif %}
+

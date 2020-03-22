@@ -78,6 +78,21 @@
   roles:
     - kubeconfig
 
+- name: Create kubeconfig file for Keystone identity
+  hosts: localhost 
+  become: no
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+    cluster_ca_file: "{{state_dir}}/ca/k8s_ca.crt"
+    kubeconfig_dest: "{{state_dir}}/config/keystone-kubeconfig"
+    cluster_endpoint: "https://{{os.access_node.ip}}:6443"
+    cluster_name: "my-cluster"
+    user_name: "k8s"
+    create_exec_identity: true
+    create_tls_identity: false
+  roles:
+    - kubeconfig
+
 - name: Create kubeconfig file for the controller manager
   hosts: localhost
   become: no 

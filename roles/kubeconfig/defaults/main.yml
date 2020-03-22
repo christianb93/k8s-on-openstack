@@ -1,0 +1,8 @@
+#
+# Create a certificate based identity
+#
+create_tls_identity: true
+#
+# Create an exec entry in the kubeconfig file 
+#
+create_exec_identity: false

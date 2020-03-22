@@ -4,19 +4,26 @@
     cat {{client_key_file}}
   register: 
     client_key_file_out
+  when:
+    create_tls_identity
 - name: encode as base64 
   set_fact:
     client_key_data: "{{client_key_file_out.stdout | b64encode }}"
-
+  when:
+    create_tls_identity
 
 - name: get client certificate from file 
   shell:
     cat {{client_cert_file}}
   register: 
     client_cert_file_out
+  when:
+    create_tls_identity
 - name: encode as base64 
   set_fact:
     client_cert_data: "{{client_cert_file_out.stdout | b64encode }}"  
+  when:
+    create_tls_identity
   
 - name: get CA certificate from file
   shell:
