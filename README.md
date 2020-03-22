@@ -27,7 +27,7 @@ The labs are structured as follows:
 * Lab6 - play with the Kuryr networking solution
 * Lab7 - install the Cinder CSI plugins
 * Lab8 - use the Octavia Ingress controller
-
+* Lab9 - use the Keystone identity webhook
 
 # Sizing of the environment
 
@@ -171,8 +171,13 @@ ansible-playbook -i .state/config/cluster.yaml cluster/cluster.yaml
 
 Note that, as this configuration currently still uses the same state directory as the GCE based configuration, it should not be run in the same tree as the GCE based configuration. 
 
+# Using Keystone identity
 
+Starting at lab 9, the Keystone webhook server is installed by default which allows us to authenticate against the Kubernetes API via Keystone credentials. To use this integration, the following three steps are necessary
 
+* make sure that you have a copy of the *client-keystone-auth* binary somewhere in your path. You can download a v1.17 version of the binary [here](https://storage.googleapis.com/leftasexercise.com/kube-binaries/client-keystone-auth)
+* make sure that the OpenStack specific environment variables are set, for instance by sourcing *.state/credentials/k8s-openrc*
+* point $KUBECONFIG to *.state/config/keystone-kubeconfig*
 
 
 
