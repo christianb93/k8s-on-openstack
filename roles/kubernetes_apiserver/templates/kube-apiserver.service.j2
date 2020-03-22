@@ -23,7 +23,7 @@ ExecStart=/usr/local/bin/kube-apiserver \
    --requestheader-client-ca-file /etc/kubernetes/pki/proxy_ca.crt \
    --service-cluster-ip-range {{service_cidr}} \
 {% if use_authentication_webhook %}
-   --authentication-token-webhook-config-file={{authentication_webhook_config_file}}
+   --authentication-token-webhook-config-file={{authentication_webhook_config_file}} \
 {% endif %}
    --allow-privileged=true 
 Restart=always
