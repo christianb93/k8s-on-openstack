@@ -1,0 +1,17 @@
+[Unit]
+Description=k8s-keystone-auth - the Keystone webhook server
+Documentation=http://kubernetes.io/docs/
+
+[Service]
+ExecStart=/usr/local/bin/k8s-keystone-auth \
+   --keystone-url={{os.public_auth_url}} \
+   --keystone-ca-file=/etc/kubernetes/pki/os_ca.crt \
+   --listen=127.0.0.1:8443 \
+   --tls-cert-file=/etc/kubernetes/pki/keystone_webhook_server.crt \
+   --tls-private-key-file=/etc/kubernetes/pki/keystone_webhook_server.rsa
+Restart=always
+StartLimitInterval=0
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
