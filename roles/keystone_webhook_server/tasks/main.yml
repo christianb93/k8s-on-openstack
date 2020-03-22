@@ -36,6 +36,11 @@
     enabled: yes
     state: restarted
 
+- name: Make sure that /etc/kubernetes/conf exists
+  file:
+    path: "/etc/kubernetes/conf"
+    state: directory
+
 - name: Create webhook configuration file for Kube API server
   template:
     src: webhook.conf.j2
