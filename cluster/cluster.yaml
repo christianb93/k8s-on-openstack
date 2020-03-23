@@ -9,7 +9,7 @@
       sleep: 10
 
 - name: Read cluster configuration 
-  hosts: access_node, localhost
+  hosts: access_node, localhost, master
   become: no 
   tasks:
     - name: Read cluster configuration
@@ -35,12 +35,25 @@
   become: yes
   roles:
     - etcd
-    
+
+- name: Install Keystone webhook server
+  hosts: master
+  become: yes
+  vars:
+    os_ca_cert_file: "{{state_dir}}/ca/os_ca.crt"
+    ca_cert_data: "{{ lookup('file', '{{state_dir}}/ca/k8s_ca.crt')  }}"
+  roles:
+    - keystone_webhook_server
+
 - name: Install Kubernetes API server 
   hosts: master
   become: yes
   vars:
     kube_apiserver_binary_url: https://storage.googleapis.com/leftasexercise.com/kube-binaries/kube-apiserver
+    authentication_webhook_config_file: "/etc/kubernetes/conf/webhook.conf"
+    use_authentication_webhook: true
+    authorization_webhook_config_file: "/etc/kubernetes/conf/webhook.conf"
+    use_authorization_webhook: true
   roles:
     - kubernetes_apiserver
 
@@ -67,6 +80,21 @@
   roles:
     - kubeconfig
 
+- name: Create kubeconfig file for Keystone identity
+  hosts: localhost 
+  become: no
+  vars:
+    state_dir: "{{playbook_dir}}/../.state"
+    cluster_ca_file: "{{state_dir}}/ca/k8s_ca.crt"
+    kubeconfig_dest: "{{state_dir}}/config/keystone-kubeconfig"
+    cluster_endpoint: "https://{{os.access_node.ip}}:6443"
+    cluster_name: "my-cluster"
+    user_name: "k8s"
+    create_exec_identity: true
+    create_tls_identity: false
+  roles:
+    - kubeconfig
+
 - name: Create kubeconfig file for the controller manager
   hosts: localhost
   become: no 
@@ -81,7 +109,6 @@
     user_name: system:kube-controller-manager
   roles:
     - kubeconfig
-
 
 
 - name: Install Kubernetes controller manager 
@@ -181,3 +208,28 @@
     "{{playbook_dir}}/group_vars/all.yml"
   roles:
     - octavia_ingress_controller    
+
+#
+# We now switch the Keystone identity webhook server over to 
+# a dynamic policy configuration via a config map
+#
+- name: Create config map with policy 
+  hosts: localhost 
+  become: no 
+  vars:
+    policy_config_map_name: "keystone-webhook-policy"
+  roles:
+    - keystone_webhook_policy
+    
+- name: Adapt webhook configuration to use a dynamic policy 
+  hosts: master
+  become: yes
+  vars:
+    os_ca_cert_file: "{{state_dir}}/ca/os_ca.crt"
+    ca_cert_data: "{{ lookup('file', '{{state_dir}}/ca/k8s_ca.crt')  }}"
+    use_static_policy: false
+    use_dynamic_policy: true
+    policy_config_map_name: "keystone-webhook-policy"
+  roles:
+    - keystone_webhook_server
+

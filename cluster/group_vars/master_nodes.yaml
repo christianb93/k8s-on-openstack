@@ -47,3 +47,10 @@ scheduler_key: "{{state_dir}}/k8s_certs/scheduler.rsa"
 # The kubeconfig file that the Kubernetes scheduler will use
 # to connect to the API server
 scheduler_kubeconfig: "{{state_dir}}/config/scheduler-kubeconfig"
+# The local path to the TLS certificate that we use for the Keystone webhook
+# server
+keystone_webhook_server_cert_file: "{{state_dir}}/k8s_certs/keystone_webhook_server.crt"
+# The corresponding private key file
+keystone_webhook_server_private_key_file: "{{state_dir}}/k8s_certs/keystone_webhook_server.rsa"
+# The Keystone webhook server binary
+keystone_webhook_binary_url: "https://storage.googleapis.com/leftasexercise.com/kube-binaries/k8s-keystone-auth"
