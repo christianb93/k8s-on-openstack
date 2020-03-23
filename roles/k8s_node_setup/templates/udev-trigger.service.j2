@@ -1,0 +1,6 @@
+[Unit]
+Description=Run udevadm trigger every 10 seconds
+
+[Service]
+Restart=always
+ExecStart=/bin/bash -c "while true; do udevadm trigger ; sleep 10; done"

@@ -37,3 +37,17 @@
     group: root
     mode: 0711
     dest: "/usr/local/bin/kubectl"
+
+#
+# As a workaround for udev rules not firing, run
+# udev trigger every 10 seconds 
+#
+- name: Run udev trigger every 10 seconds - create unit file 
+  template:
+    src: udev-trigger.service.j2
+    dest: /lib/systemd/system/udev-trigger.service
+- name: Start service 
+  service:
+    state: started
+    daemon_reload: yes
+    name: udev-trigger
