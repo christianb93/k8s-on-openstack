@@ -8,8 +8,18 @@ found=$(sudo ovsdb-client dump  unix:/var/run/openvswitch/db.sock Open_vSwitch P
 while [ "$found" == "0" ]; do
   sleep 1 
 done
-# The port is there - get VLAND id
-vlan_id=$({{install_user_home}}/get_vlan_id.sh)
+# The port is there - get VLAN id
+vlan_id=4095
+attempts=0
+while [ "$vlan_id" == "4095" ]; do 
+  vlan_id=$({{install_user_home}}/get_vlan_id.sh)
+  sleep 1
+  let attemps++
+  if [ "$attempts" -gt "4" ]; then 
+    echo "update_lb_port_tag.sh: timed out, vlan_id is still $vlan_id"
+    exit 1
+  fi
+done
 # and update port
 sudo ovs-vsctl set port lb_port tag=$vlan_id 
 echo "update_lb_port_tag.sh: set tag $vlan_id on load balancer port"
