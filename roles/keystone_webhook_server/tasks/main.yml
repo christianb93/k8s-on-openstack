@@ -30,10 +30,12 @@
 - name: Create policy file
   template:
     src: keystone_policy.json.j2
-    dest: "/etc/kubernetes/conf/keystone_policy.json"
+    dest: "{{policy_file_name}}"
     owner: root
     group: root
     mode: 0644
+  when:
+    use_static_policy
 
 - name: Generate systemd unit file for webhook server 
   template: 
@@ -47,6 +49,7 @@
   service:
     name: k8s-keystone-auth
     enabled: yes
+    daemon_reload: yes
     state: restarted
 
 

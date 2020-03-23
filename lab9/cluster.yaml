@@ -111,7 +111,6 @@
     - kubeconfig
 
 
-
 - name: Install Kubernetes controller manager 
   hosts: master 
   become: yes 
@@ -209,3 +208,28 @@
     "{{playbook_dir}}/group_vars/all.yml"
   roles:
     - octavia_ingress_controller    
+
+#
+# We now switch the Keystone identity webhook server over to 
+# a dynamic policy configuration via a config map
+#
+- name: Create config map with policy 
+  hosts: localhost 
+  become: no 
+  vars:
+    policy_config_map_name: "keystone-webhook-policy"
+  roles:
+    - keystone_webhook_policy
+    
+- name: Adapt webhook configuration to use a dynamic policy 
+  hosts: master
+  become: yes
+  vars:
+    os_ca_cert_file: "{{state_dir}}/ca/os_ca.crt"
+    ca_cert_data: "{{ lookup('file', '{{state_dir}}/ca/k8s_ca.crt')  }}"
+    use_static_policy: false
+    use_dynamic_policy: true
+    policy_config_map_name: "keystone-webhook-policy"
+  roles:
+    - keystone_webhook_server
+

@@ -34,3 +34,8 @@ The following variables need to be set to run this role.
 * keystone_webhook_binary_url - the URL of the Keystone webhook server binary
 * ca_cert_data - the CA certificate for the above TLS certs, as unencoded data
 * os_ca_cert_file - the CA certificate for the OpenStack API
+* use_static_policy - set this to true to use a static policy file
+* policy_file_name - the name of the policy file
+* use_dynamic_policy - set this to true to use a dynamic policy, stored in a config map
+* policy_config_map_name - the name of the config map (in the kube-system namespace)
+* policy_kubeconfig - the name of a kubeconfig file, present on the master node, which the webhook server should use to read the config map

@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{policy_config_map_name}}
+  namespace: kube-system
+data:
+  policies: |
+    [
+        {
+            "users": {
+                "roles": ["admin"],
+                "projects": ["k8s"]
+            },
+            "resource_permissions": {
+                "*/*": ["*"]
+            }
+        },
+        {
+            "users": {
+                "roles": ["reader"],
+                "projects": ["k8s"]
+            },
+            "resource_permissions": {
+                "*/*": ["get", "list", "watch"]
+            }
+        }
+    ]

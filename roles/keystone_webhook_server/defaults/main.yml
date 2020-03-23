@@ -1,0 +1,13 @@
+---
+# 
+# Use a static policy file
+#
+use_static_policy: true
+policy_file_name: "/etc/kubernetes/conf/keystone_policy.json"
+#
+# Use a dynamic policy in a config map
+#
+use_dynamic_policy: false 
+policy_config_map_name: "keystone-policy"
+# we reuse the kubeconfig file created for the controller manager
+policy_kubeconfig: "/etc/kubernetes/pki/kube-controller-manager-config"
