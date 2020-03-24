@@ -1,16 +1,7 @@
-<network connections='1' ipv6='yes'>
+<network>
   <name>management</name>
   <uuid>c594c2f7-d793-11aa-b2ac-44614db2ca36</uuid>
-  <forward mode='nat'>
-    <nat>
-      <port start='1024' end='65535'/>
-    </nat>
-  </forward>
   <bridge name='virbr-mgmt' stp='on' delay='0'/>
-  <ip address='192.168.101.1' netmask='255.255.255.0'>
-    <dhcp>
-      <range start='192.168.101.1' end='192.168.101.254'/>
-    </dhcp>
-  </ip>
+  <ip address='192.168.101.1' netmask='255.255.255.0'/>
 </network>
 

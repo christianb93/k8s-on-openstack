@@ -10,7 +10,7 @@
   - name: Make sure that networks are defined and up
     virt_net:
       name: "{{item}}"
-      xml: '{{ lookup("file", "{{item}}-network.xml") }}'
+      xml: '{{ lookup("file", "{{playbook_dir}}/{{item}}-network.xml") }}'
       state: active
     loop:
     - management
