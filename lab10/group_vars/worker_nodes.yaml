@@ -1,0 +1,5 @@
+---
+# The key and certificate that the kubelet will use
+# as server certificate and key
+kubelet_cert_root: "{{state_dir}}/k8s_certs/kubelet"
+kubelet_key: "{{state_dir}}/k8s_certs/kubelet.rsa"
