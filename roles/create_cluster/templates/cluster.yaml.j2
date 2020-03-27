@@ -56,6 +56,7 @@ all:
 {% if create_kuryr_networks %}
         external_network_id: {{os_router_output_kuryr.router.external_gateway_info.network_id}}
         os_router_id: {{os_router_output_kuryr.id}}
+        os_router_external_ip: {{os_router_output_kuryr.router.external_gateway_info.external_fixed_ips[0].ip_address}}
 {%    set kuryr_pod_subnet_id = ( kuryr_networks_output.results | map(attribute='subnet') | selectattr("name", "equalto", "kuryr-pod-subnet") | map(attribute='id') | list)[0]  %}
 {%    set kuryr_service_subnet_id = ( kuryr_networks_output.results | map(attribute='subnet') | selectattr("name", "equalto", "kuryr-service-subnet") | map(attribute='id') | list)[0]  %}
         kuryr_pod_subnet_id: {{kuryr_pod_subnet_id}}
@@ -64,4 +65,5 @@ all:
 {% else %}
         external_network_id: {{os_router_output.router.external_gateway_info.network_id}}
         os_router_id: {{os_router_output.id}}
+        os_router_external_ip: {{os_router_output.router.external_gateway_info.external_fixed_ips[0].ip_address}}
 {% endif %}
