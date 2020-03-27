@@ -7,10 +7,17 @@
   hosts: localhost
   become: no 
   tasks: 
-  - name: Make sure that networks are defined and up
+  - name: Make sure that networks are defined 
     virt_net:
       name: "{{item}}"
       xml: '{{ lookup("file", "{{playbook_dir}}/{{item}}-network.xml") }}'
+      state: present
+    loop:
+    - management
+    - underlay
+  - name: Start networks
+    virt_net:
+      name: "{{item}}"
       state: active
     loop:
     - management
