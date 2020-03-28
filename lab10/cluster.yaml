@@ -235,23 +235,10 @@
   roles:
     - keystone_webhook_server
 
-- name: Allow traffic to pods from access node
+- name: Set up access node for NGINX controller
   hosts: access_node
   become: yes 
-  tasks:
-    - name: Set static route
-      shell: |
-        ip route add 10.1.0.0/16 via {{os_router_external_ip}} 
-        exit 0
-    - name: Add security group rule
-      os_security_group_rule:
-        auth: "{{os.auth}}"      
-        auth_type: password
-        direction: ingress
-        remote_ip_prefix: 172.16.0.1/32
-        security_group: "node_security_group"
-        state: present
-    
-
+  roles:
+    - external_ingress_controller
 
 

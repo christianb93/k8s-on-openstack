@@ -1,0 +1,38 @@
+- name: Set static route
+  shell: |
+    ip route add 10.1.0.0/16 via {{os_router_external_ip}} 
+    exit 0
+- name: Add security group rule
+  os_security_group_rule:
+    auth: "{{os.auth}}"      
+    auth_type: password
+    direction: ingress
+    remote_ip_prefix: 172.16.0.1/32
+    security_group: "node_security_group"
+    state: present
+- name: Make sure Docker is installed
+  apt:
+    force_apt_get: yes 
+    update_cache: no
+    name: docker.io
+    state: present
+- name: Make sure that we have kubectl on the access node
+  get_url:
+    url: "{{kubectl_binary_url}}"
+    owner: root
+    group: root
+    mode: 0711
+    dest: "/usr/local/bin/kubectl"
+- name: Copy kubeconfig file to access node
+  copy: 
+    src: "{{state_dir}}/config/admin-kubeconfig"
+    dest: "/home/{{os.access_node.user}}/admin-kubeconfig"
+- name: Create manifest file for NGINX prerequisites
+  template:
+    src: nginx_prerequisites.yaml.j2
+    dest: "/home/{{os.access_node.user}}/nginx_prerequisites.yaml"
+- name: Apply manifest file
+  shell: |
+    kubectl \
+      --kubeconfig=/home/{{os.access_node.user}}/admin-kubeconfig \
+      apply -f /home/{{os.access_node.user}}/nginx_prerequisites.yaml
