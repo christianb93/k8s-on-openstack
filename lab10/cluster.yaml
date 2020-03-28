@@ -248,7 +248,7 @@
         auth: "{{os.auth}}"      
         auth_type: password
         direction: ingress
-        remote_ip_prefix: 172.16.0.1
+        remote_ip_prefix: 172.16.0.1/32
         security_group: "node_security_group"
         state: present
     
