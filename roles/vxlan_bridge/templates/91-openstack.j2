@@ -1,7 +1,8 @@
 auto {{bridge_name}}
-iface {{bridge_name}} inet manual
+iface {{bridge_name}} inet static
+    address {{bridge_ip_address}}
     ovs_type OVSBridge
-    ovs_extra set bridge {{bridge_name}} fail-mode=secure
+    ovs_extra set bridge {{bridge_name}} fail-mode=standalone
     ovs_ports {{patch_port_local_name}} {% for p in vxlan_nodes %}vxlan-{{p}}{% endfor %}
 
 allow-{{bridge_name}} {{patch_port_local_name}}
