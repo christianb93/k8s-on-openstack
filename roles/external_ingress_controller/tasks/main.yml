@@ -85,6 +85,7 @@
     name: nginx_ingress_controller
     volumes: 
       - /home/{{os.access_node.user}}:/config:ro
+    restart_policy: "always"
     state: started
 
 
