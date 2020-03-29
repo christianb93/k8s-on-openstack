@@ -1,6 +1,6 @@
 - name: Set static route
   shell: |
-    ip route add 10.1.0.0/16 via {{os_router_external_ip}} 
+    ip route add {{cluster_cidr}} via {{os_router_external_ip}} 
     exit 0
 - name: Add security group rule
   os_security_group_rule:
@@ -63,7 +63,6 @@
     auto_remove: no
     command: 
       - /nginx-ingress-controller
-      - --configmap=ingress-nginx/nginx-configuration
       - --configmap=ingress-nginx/nginx-configuration
       - --tcp-services-configmap=ingress-nginx/tcp-services
       - --udp-services-configmap=ingress-nginx/udp-services
