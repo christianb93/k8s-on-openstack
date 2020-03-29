@@ -202,15 +202,6 @@
   roles:
     - cinder_csi_plugin
 
-
-- name: Install ingress controller
-  hosts: localhost
-  become: no
-  vars_files:
-    "{{playbook_dir}}/group_vars/all.yml"
-  roles:
-    - octavia_ingress_controller    
-
 #
 # We now switch the Keystone identity webhook server over to 
 # a dynamic policy configuration via a config map
@@ -235,7 +226,7 @@
   roles:
     - keystone_webhook_server
 
-- name: Set up access node for NGINX controller
+- name: Install external NGINX ingress controller
   hosts: access_node
   become: yes 
   roles:
