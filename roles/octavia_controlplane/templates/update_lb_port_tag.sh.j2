@@ -16,10 +16,15 @@ while [ "$vlan_id" == "4095" ]; do
   sleep 1
   let attemps++
   if [ "$attempts" -gt "4" ]; then 
-    echo "update_lb_port_tag.sh: timed out, vlan_id is still $vlan_id"
+    echo "update_lb_port_tag.sh: timed out, vlan_id is still -$vlan_id-"
     exit 1
   fi
+  echo "Got VLAN ID -$vlan_id- from helper script"
 done
 # and update port
 sudo ovs-vsctl set port lb_port tag=$vlan_id 
 echo "update_lb_port_tag.sh: set tag $vlan_id on load balancer port"
+# Finally assign IP address
+sudo ip addr add dev lb_port {{lb_network_mgmt_ip}}/24 > /dev/null 2>&1
+sudo ip link set dev lb_port mtu {{lb_port_mtu}}
+sudo ip link set dev lb_port up

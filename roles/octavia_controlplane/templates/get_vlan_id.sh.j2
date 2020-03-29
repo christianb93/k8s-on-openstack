@@ -11,9 +11,11 @@ while [ "$found" == "0" ]; do
   sleep 1 
   let attempts++
   if [ "$attempts" -gt "16" ]; then 
-    echo "get_vlan_id.sh: timed out waiting for DHCP agent"
+    echo "get_vlan_id.sh: timed out waiting for DHCP agent, returning default 4095" >&2
+    echo "4095"
     exit 1
   fi
+  found=$(sudo ip netns list | grep "$ns_id" | wc -l)
 done
 # Now get ID of corresponding port 
 ovs_port_id=$(sudo ip netns exec $ns_id ifconfig -a | grep "tap" | awk '{ print $1 }' | sed 's/://')
@@ -21,4 +23,7 @@ ovs_port_id=$(sudo ip netns exec $ns_id ifconfig -a | grep "tap" | awk '{ print 
 record=$(sudo ovsdb-client dump  unix:/var/run/openvswitch/db.sock Open_vSwitch Port name tag | grep $ovs_port_id)
 # Extract tag 
 tag=$(echo $record | awk '{print $2'})
+if [ "$tag" == "" ]; then 
+  echo "4095"
+fi
 echo $tag
