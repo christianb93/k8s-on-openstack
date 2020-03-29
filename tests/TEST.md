@@ -215,3 +215,16 @@ kubectl get volumeattachment
 ```
 
 When you delete the pod and the PVC again, you should also find that the Cinder volume has been deleted as well.
+
+# Testing the external ingress controller
+
+In Lab 10, we install an external NGINX ingress controller running on the access node, i.e. out-of-cluster. To test this controller, we need to create an ingress with the annotation *kubernetes.io/ingress.class* set to *nginx*, so that the controller recognizes and processes the ingress (note that the controller would also take care of an ingress for which this annotation does not exist). An example for such an ingress can be found in *external_ingress/ingress.yaml*, which also create two pods and two corresponding services behind the ingress. 
+
+Once the ingress has been created, we can check its *status* which the controller will update with the IP address of the access node once it has been processed. At this point, we should be able to use *curl* to connect to port 8008 of the access node (the port on which the external ingress controller is listening for HTTP requests) and see the output of either the nginx service or the httpd service, depending on the *Host* header. To run these tests automatically, simply execute
+
+```
+./tests/external_ingress/ingress.sh
+```
+
+from the root directory of the repository.
+
