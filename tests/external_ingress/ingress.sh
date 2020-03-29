@@ -49,7 +49,7 @@ while [ "$ip" == "null" ]; do
   sleep 2
   echo "Still waiting..."
 done
-
+echo "Got IP $ip"
 
 echo "Trying to reach httpd service"
 result=$(curl -s --header 'Host: apache.leftasexercise.org' http://$ip:8080/index.html | grep 'It works' | wc -l)
