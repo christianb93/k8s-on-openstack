@@ -39,15 +39,26 @@ kubectl apply -f $scriptdir/ingress.yaml
 wait_for_deployment "httpd"
 wait_for_deployment "nginx"
 
+#
+# Wait until the loadbalancer status is updated in the ingress
+#
+echo "Waiting for IP in ingress status"
+ip="null"
+while [ "$ip" == "null" ]; do
+  ip=$(kubectl get ingress  test-ingress -o json  | jq -r ".status.loadBalancer.ingress[0].ip")
+  sleep 2
+  echo "Still waiting..."
+done
+
 
 echo "Trying to reach httpd service"
-result=$(curl -s --header 'Host: apache.leftasexercise.org' http://192.168.101.12:8080/index.html | grep 'It works' | wc -l)
+result=$(curl -s --header 'Host: apache.leftasexercise.org' http://$ip:8080/index.html | grep 'It works' | wc -l)
 if [ "$result" != "1" ]; then
   echo -e "\033[31mCurl to httpd service failed! \033[0m"
 fi
 
 echo "Trying to reach nginx service"
-result=$(curl -s --header 'Host: nginx.leftasexercise.org' http://192.168.101.12:8080/index.html | grep 'successfully installed' | wc -l)
+result=$(curl -s --header 'Host: nginx.leftasexercise.org' http://$ip:8080/index.html | grep 'successfully installed' | wc -l)
 if [ "$result" != "1" ]; then
   echo -e "\033[31mCurl to nginx service failed! \033[0m"
 fi
