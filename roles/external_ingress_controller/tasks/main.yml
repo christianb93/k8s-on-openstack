@@ -10,12 +10,27 @@
     remote_ip_prefix: 172.16.0.1/32
     security_group: "node_security_group"
     state: present
-- name: Make sure Docker is installed
+- name: Make sure Docker and python3-pip are installed
   apt:
     force_apt_get: yes 
     update_cache: no
-    name: docker.io
+    name: "{{item}}"
     state: present
+  loop:
+    - docker.io
+    - python3-pip
+- name: Use custom systemd unit definition for dockerd to disable iptables 
+  template:
+    dest: /lib/systemd/system/docker.service
+    src: docker.service.j2
+- name: Restart service 
+  service:
+    daemon_reload: yes
+    state: restarted 
+    name: docker
+- name: Install docker-py
+  shell: |
+    pip3 install docker-py
 - name: Make sure that we have kubectl on the access node
   get_url:
     url: "{{kubectl_binary_url}}"
@@ -36,3 +51,39 @@
     kubectl \
       --kubeconfig=/home/{{os.access_node.user}}/admin-kubeconfig \
       apply -f /home/{{os.access_node.user}}/nginx_prerequisites.yaml
+- name: Pull image
+  docker_image: 
+    build:
+      pull: yes
+    source: pull
+    name: "{{nginx_controller_image}}"
+    state: present
+- name: Start controller 
+  docker_container:
+    auto_remove: no
+    command: 
+      - /nginx-ingress-controller
+      - --configmap=ingress-nginx/nginx-configuration
+      - --configmap=ingress-nginx/nginx-configuration
+      - --tcp-services-configmap=ingress-nginx/tcp-services
+      - --udp-services-configmap=ingress-nginx/udp-services
+      - --publish-service=ingress-nginx/ingress-nginx
+      - --annotations-prefix=nginx.ingress.kubernetes.io
+      - --kubeconfig=/config/admin-kubeconfig
+      - --apiserver-host=https://{{os.access_node.ip}}:6443
+      - --http-port=8080
+      - --https-port=4433
+      - --disable-catch-all
+      - --ingress-class=nginx
+    env:
+      POD_NAME: nginx-controller-dummy
+      POD_NAMESPACE: ingress-nginx
+    network_mode: host
+    detach: yes
+    image: "{{nginx_controller_image}}"
+    name: nginx_ingress_controller
+    volumes: 
+      - /home/{{os.access_node.user}}:/config:ro
+    state: started
+
+
