@@ -67,7 +67,6 @@
       - --configmap=ingress-nginx/nginx-configuration
       - --tcp-services-configmap=ingress-nginx/tcp-services
       - --udp-services-configmap=ingress-nginx/udp-services
-      - --publish-service=ingress-nginx/ingress-nginx
       - --annotations-prefix=nginx.ingress.kubernetes.io
       - --kubeconfig=/config/admin-kubeconfig
       - --apiserver-host=https://{{os.access_node.ip}}:6443
@@ -75,6 +74,8 @@
       - --https-port=4433
       - --disable-catch-all
       - --ingress-class=nginx
+      - --publish-status-address={{os.access_node.ip}}
+      - --update-status=true
     env:
       POD_NAME: nginx-controller-dummy
       POD_NAMESPACE: ingress-nginx
