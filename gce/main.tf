@@ -113,7 +113,7 @@ resource "google_compute_firewall" "public-firewall" {
 
   allow {
     protocol      = "tcp"
-    ports         = ["5000", "8774", "8776", "8778", "9696", "9292", "9876", "22", "443", "6080", "6443"]
+    ports         = ["5000", "8774", "8776", "8778", "9696", "9292", "9876", "22", "443", "6080", "6443", "8080", "4433"]
   }
 
   # If you loose connectivity to your instance and want to use the browser-based

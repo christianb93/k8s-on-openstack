@@ -88,8 +88,8 @@
     internal_ip_address: "172.16.0.1/24"
     internal_interface_mtu: 1450
     # We open a few additional ports that we need to connect to the API, including
-    # port 6080 for the VNC proxy
-    os_known_ports: ['5000', '8774', '8776', '8778', '9696', '9292', '9876','443', '6080', '6443']
+    # port 6080 for the VNC proxy and ports 8080 and 4433 for the external ingress controller
+    os_known_ports: ['5000', '8774', '8776', '8778', '9696', '9292', '9876','443', '6080', '6443', '8080', '4433']
   roles:
     - vxlan_bridge
     - router 
