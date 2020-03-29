@@ -15,25 +15,6 @@
 - name: Load rules once 
   shell:
     iptables-restore /etc/iptables/rules.v4
-- name: Assign IP address to internal interface
-  shell: |
-    ip addr add {{internal_ip_address}} dev {{internal_interface}}
-    exit 0
-- name: Bring up interface
-  command: ip link set dev {{internal_interface}} up
-- name: Set MTU 
-  command: ip link set dev {{internal_interface}} mtu {{internal_interface_mtu}}
-- name: Make this configuration persistent 
-  template:
-    src: 91-openstack.j2
-    dest: /etc/network/interfaces.d/91-openstack
-    mode: 0644
-    owner: root
-- name: Source configuration in /etc/network/interfaces
-  lineinfile:
-    line: "source /etc/network/interfaces.d/91-openstack"
-    state: present
-    path: /etc/network/interfaces
 - name: Allow IP forwarding
   shell: echo 1 > /proc/sys/net/ipv4/ip_forward
 - name: And add a line to /etc/sysconf.d so that this survices a reboot

@@ -1,0 +1,2 @@
+# MTU that we use for the bridge
+bridge_mtu: 1450

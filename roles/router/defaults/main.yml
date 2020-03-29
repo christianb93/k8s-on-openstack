@@ -1,6 +1,4 @@
 ---
-# MTU that we use for the internal interface
-internal_interface_mtu: 1450
 # Additional known ports to allow
 os_known_ports: 
 # If we set this to true, we also allow the known ports

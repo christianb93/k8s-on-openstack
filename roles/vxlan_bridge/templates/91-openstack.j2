@@ -1,0 +1,21 @@
+auto {{bridge_name}}
+iface {{bridge_name}} inet manual
+    ovs_type OVSBridge
+    ovs_extra set bridge {{bridge_name}} fail-mode=secure
+    ovs_ports {{patch_port_local_name}} {% for p in vxlan_nodes %}vxlan-{{p}}{% endfor %}
+
+allow-{{bridge_name}} {{patch_port_local_name}}
+iface {{patch_port_local_name}} inet manual
+    ovs_bridge {{bridge_name}}
+    ovs_type OVSPatchPort
+    ovs_patch_peer {{patch_port_peer_name}}
+
+{% for p in vxlan_nodes %}
+allow-{{bridge_name}} vxlan-{{p}}
+iface vxlan-{{p}} inet manual
+    ovs_bridge {{bridge_name}}
+    ovs_type OVSTunnel
+    ovs_tunnel_type vxlan
+    ovs_tunnel_options options:remote_ip={{p}} options:key={{vxlan_id}}
+
+{% endfor %}
