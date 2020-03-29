@@ -28,6 +28,7 @@ The labs are structured as follows:
 * Lab7 - install the Cinder CSI plugins
 * Lab8 - use the Octavia Ingress controller
 * Lab9 - use the Keystone identity webhook
+* Lab10 - run an external ingress controller on the access node
 
 # Sizing of the environment
 
@@ -138,7 +139,7 @@ If you have a machine with sufficient memory (at least 32 GB), you can also run 
 To run this example, there are a few one-time setup steps needed. First, we of course need to install KVM and the libvirt library. We also install the libvirt Python package which is required by Ansible's virt_net module.
 
 ```
-sudo apt-get update && sudo apt-get install libvirt-daemon libvirt-clients libvirt-manager python3-libvirt
+sudo apt-get update && sudo apt-get install libvirt-daemon libvirt-clients virt-manager python3-libvirt
 sudo adduser $(id -un) libvirt
 sudo adduser $(id -un) kvm
 # Log in again to get new group assigment
