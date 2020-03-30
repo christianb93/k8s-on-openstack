@@ -33,4 +33,7 @@ while [ "$tag" == "4095" ]; do
     exit 1
   fi
 done
+if [ "$tag" == "" ]; then
+  tag=4095
+fi
 echo $tag
