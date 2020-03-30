@@ -181,5 +181,9 @@ Starting at lab 9, the Keystone webhook server is installed by default which all
 * point $KUBECONFIG to *.state/config/keystone-kubeconfig*
 
 
+# Troubleshooting
 
+Here are a few common problems and pitfalls.
+
+* Load balancer not created. When Octavia load balancers cannot be created, the reason might be that the VLAN tag for the *lb_port* on the external bridge *br-ext* is not correctly set. In this case, it usually helps to log into the network node and run `sudo ./update_lb_port_tag.sh`
 
