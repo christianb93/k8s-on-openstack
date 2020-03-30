@@ -35,3 +35,22 @@
     line: "source /etc/network/interfaces.d/91-openstack"
     state: present
     path: /etc/network/interfaces
+- name: Change service type of networking.service to simple
+  lineinfile:
+    line: "Type=simple"
+    regexp: "^Type="
+    state: present
+    path: /lib/systemd/system/networking.service
+- name: Restart networking.service on failure
+  lineinfile:
+    line: "Restart=on-failure"
+    insertafter: "^Type="
+    firstmatch: yes
+    state: present
+    path: /lib/systemd/system/neutron-openvswitch-agent.service
+- name: Set RestartSec in systemd unit file
+  lineinfile:
+    path: /lib/systemd/system/networking.service
+    line: "RestartSec=5"
+    insertafter: "Restart=.*"
+    state: present

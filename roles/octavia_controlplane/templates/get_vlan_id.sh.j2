@@ -17,13 +17,20 @@ while [ "$found" == "0" ]; do
   fi
   found=$(sudo ip netns list | grep "$ns_id" | wc -l)
 done
-# Now get ID of corresponding port 
-ovs_port_id=$(sudo ip netns exec $ns_id ifconfig -a | grep "tap" | awk '{ print $1 }' | sed 's/://')
-# Get record for this port (columns name, other_config) from the OVS DB
-record=$(sudo ovsdb-client dump  unix:/var/run/openvswitch/db.sock Open_vSwitch Port name tag | grep $ovs_port_id)
-# Extract tag 
-tag=$(echo $record | awk '{print $2'})
-if [ "$tag" == "" ]; then 
-  echo "4095"
-fi
+tag=4095
+attempts=0
+while [ "$tag" == "4095" ]; do
+  # Get ID of corresponding port 
+  ovs_port_id=$(sudo ip netns exec $ns_id ifconfig -a | grep "tap" | awk '{ print $1 }' | sed 's/://')
+  # Get record for this port (columns name, other_config) from the OVS DB
+  record=$(sudo ovsdb-client dump  unix:/var/run/openvswitch/db.sock Open_vSwitch Port name tag | grep $ovs_port_id)
+  # Extract tag 
+  tag=$(echo $record | awk '{print $2'})
+  let attempts++
+  if [ "$attempts" -gt "16" ]; then 
+    echo "get_vlan_id.sh: timed out waiting for VLAN tag, returning default 4095" >&2
+    echo "4095"
+    exit 1
+  fi
+done
 echo $tag
