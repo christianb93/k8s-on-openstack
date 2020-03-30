@@ -242,10 +242,13 @@
     force: yes
     mode: 0700
 - name: Run script to determine local VLAN ID of our load balancer network
-  shell: 
-    "{{install_user_home}}/get_vlan_id.sh"
+  shell: |
+    {{install_user_home}}/get_vlan_id.sh
   register: 
     tag
+- name: Print VLAN ID 
+  debug:
+    var: tag
 - name: Remember value for later use 
   set_fact:
     local_vlan_id: "{{tag.stdout}}"
