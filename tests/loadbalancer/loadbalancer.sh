@@ -68,14 +68,14 @@ for src_pod in "${pods[@]}"; do
 done
 
 #
-# Go through the pods once more and ping a known server in the outside world
+# Go through the pods once more and try a UDP connection to a known server
 #
 for src_pod in "${pods[@]}"; do
     echo "$src_pod ---> 8.8.8.8"
-    kubectl exec $src_pod -- ping -c 1 8.8.8.8  > /dev/null 2>&1
+    kubectl exec $src_pod -- dig +time=1 +tries=3 @8.8.8.8 www.google.com  > /dev/null 2>&1
     success=$?
     if [ "$success" != "0" ]; then
-        echo -e "\033[31mPing from $src_pod to 8.8.8.8 failed \033[0m"
+        echo -e "\033[31mDNS from $src_pod to 8.8.8.8 failed \033[0m"
         let errors++
     fi
 done

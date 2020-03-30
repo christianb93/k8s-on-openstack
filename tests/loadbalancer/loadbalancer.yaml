@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: test3
-          image: christianb93/demo:v0.2
+          image: christianb93/demo:v0.3
       serviceAccount: demo-sa
 ---
 apiVersion: v1

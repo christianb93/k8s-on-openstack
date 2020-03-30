@@ -3,7 +3,7 @@ FROM debian:buster
 #
 # Install needed packages
 #
-RUN apt-get update && apt-get -y install net-tools curl 
+RUN apt-get update && apt-get -y install net-tools curl dnsutils
 
 
 # 
