@@ -6,6 +6,7 @@ iface {{bridge_name}} inet static
     ovs_extra set bridge {{bridge_name}} fail-mode=standalone
     ovs_ports {{patch_port_local_name}} {% for p in vxlan_nodes %}vxlan-{{p}}{% endfor %}
 
+auto {{patch_port_local_name}}
 allow-{{bridge_name}} {{patch_port_local_name}}
 iface {{patch_port_local_name}} inet manual
     ovs_bridge {{bridge_name}}
@@ -13,6 +14,7 @@ iface {{patch_port_local_name}} inet manual
     ovs_patch_peer {{patch_port_peer_name}}
 
 {% for p in vxlan_nodes %}
+auto vxlan-{{p}}
 allow-{{bridge_name}} vxlan-{{p}}
 iface vxlan-{{p}} inet manual
     ovs_bridge {{bridge_name}}
